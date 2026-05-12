@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Bank Sampah</title>
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#10b981">
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png') }}">
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -100,5 +103,18 @@
     </main>
 
     @stack('scripts')    
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker terdaftar sukses dengan scope: ', registration.scope);
+                })
+                .catch(err => {
+                    console.log('Pendaftaran ServiceWorker gagal: ', err);
+                });
+        });
+    }
+</script>
 </body>
 </html>
