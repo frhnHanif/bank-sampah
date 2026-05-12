@@ -39,16 +39,23 @@
                         <span class="px-2 py-1 bg-gray-100 rounded-md text-xs font-bold">{{ $item->rt }} / {{ $item->rw }}</span>
                     </td>
                     <td class="p-4 text-gray-600">{{ $item->no_hp ?? '-' }}</td>
+                    
                     <td class="p-4 text-center">
-                        <form action="{{ route('nasabah.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus nasabah ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-400 hover:text-red-600 transition p-2">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </form>
+                        <div class="flex items-center justify-center gap-2">
+                            <a href="{{ route('tabungan.show', $item->id) }}" class="text-emerald-500 hover:text-emerald-700 transition p-2 bg-emerald-50 rounded-lg hover:bg-emerald-100 tooltip" title="Buku Tabungan">
+                                <i class="fa-solid fa-book"></i>
+                            </a>
+                            
+                            <form action="{{ route('nasabah.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus nasabah ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-400 hover:text-red-600 transition p-2 bg-red-50 rounded-lg hover:bg-red-100">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </div>
                     </td>
-                </tr>
+                    </tr>
                 @empty
                 <tr>
                     <td colspan="5" class="p-8 text-center text-gray-400 italic">
