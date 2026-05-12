@@ -37,7 +37,7 @@
                         @endforeach
                     </select>
                 </div>
-                <button type="button" class="w-12 h-12 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-emerald-600 hover:bg-emerald-50 transition shadow-sm">
+                <button type="button" onclick="bukaModalQR()" class="w-12 h-12 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-emerald-600 hover:bg-emerald-50 transition shadow-sm">
                     <i class="fa-solid fa-qrcode"></i>
                 </button>
             </div>
@@ -134,7 +134,59 @@
     </div>
 </div>
 
+<div id="modalQrScanner" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[110] hidden items-center justify-center opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300 shadow-xl" id="modalQrBox">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-camera"></i> Scan QR Code
+            </h3>
+            <button type="button" onclick="tutupModalQR()" class="text-gray-400 hover:text-red-500 transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        
+        <div class="p-6 space-y-4">
+            <div class="relative w-full h-64 bg-black rounded-xl flex items-center justify-center overflow-hidden shadow-inner">
+                <video id="qrVideo" class="w-full h-full object-cover hidden" playsinline></video>
+                
+                <div id="qrLoading" class="text-center">
+                    <div class="animate-spin h-8 w-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p class="text-gray-300 text-sm">Menyalakan kamera...</p>
+                </div>
+
+                <div id="qrError" class="hidden text-center p-4">
+                    <p class="text-red-400 text-sm" id="qrErrorMsg"></p>
+                </div>
+
+                <div id="qrOverlay" class="hidden absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div class="w-48 h-48 border-2 border-white/50 rounded-lg relative">
+                        <div class="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-emerald-500 rounded-tl"></div>
+                        <div class="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-emerald-500 rounded-tr"></div>
+                        <div class="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-emerald-500 rounded-bl"></div>
+                        <div class="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-emerald-500 rounded-br"></div>
+                        <div class="absolute inset-x-0 top-1/2 h-0.5 bg-emerald-500/70 animate-pulse"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <canvas id="qrCanvas" class="hidden"></canvas>
+            
+            <div class="text-center">
+                <p class="text-sm text-gray-500" id="qrStatusText">
+                    Arahkan kamera ke QR code untuk memindai.
+                </p>
+            </div>
+            
+            <button type="button" onclick="tutupModalQR()" class="w-full border border-gray-200 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-bold transition-colors mt-2">
+                Tutup Scanner
+            </button>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
 <script>
     // === FORMATTER ===
     const formatRp = (angka) => {
@@ -167,7 +219,135 @@
         document.getElementById('nasabahCard').classList.add('hidden');
     }
 
-    // === LOGIKA MODAL & KERANJANG ===
+    // === LOGIKA QR SCANNER ===
+    let videoStream = null;
+    let scanAnimation = null;
+    const qrVideo = document.getElementById('qrVideo');
+    const qrCanvas = document.getElementById('qrCanvas');
+    const qrContext = qrCanvas.getContext('2d', { willReadFrequently: true });
+    
+    const modalQr = document.getElementById('modalQrScanner');
+    const modalQrBox = document.getElementById('modalQrBox');
+
+    function bukaModalQR() {
+        modalQr.classList.remove('hidden');
+        modalQr.classList.add('flex');
+        setTimeout(() => {
+            modalQr.classList.remove('opacity-0');
+            modalQrBox.classList.remove('scale-95');
+        }, 10);
+        
+        mulaiKamera();
+    }
+
+    function tutupModalQR() {
+        hentiKamera();
+        
+        modalQr.classList.add('opacity-0');
+        modalQrBox.classList.add('scale-95');
+        setTimeout(() => {
+            modalQr.classList.add('hidden');
+            modalQr.classList.remove('flex');
+        }, 300);
+    }
+
+    async function mulaiKamera() {
+        const loadingDiv = document.getElementById('qrLoading');
+        const errorDiv = document.getElementById('qrError');
+        const overlayDiv = document.getElementById('qrOverlay');
+        
+        loadingDiv.classList.remove('hidden');
+        errorDiv.classList.add('hidden');
+        qrVideo.classList.add('hidden');
+        overlayDiv.classList.add('hidden');
+        document.getElementById('qrStatusText').innerText = "Menyalakan kamera...";
+
+        try {
+            videoStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } }
+            });
+            
+            qrVideo.srcObject = videoStream;
+            qrVideo.play();
+            
+            qrVideo.onloadedmetadata = () => {
+                loadingDiv.classList.add('hidden');
+                qrVideo.classList.remove('hidden');
+                overlayDiv.classList.remove('hidden');
+                document.getElementById('qrStatusText').innerText = "Arahkan kamera ke QR code untuk memindai.";
+                scanFrame(); // Mulai scanning
+            };
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            loadingDiv.classList.add('hidden');
+            errorDiv.classList.remove('hidden');
+            document.getElementById('qrStatusText').innerText = "Jika kamera tidak muncul, periksa izin kamera pada browser.";
+            
+            if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+                document.getElementById('qrErrorMsg').innerText = "Izin akses kamera ditolak. Silakan berikan izin di browser Anda.";
+            } else {
+                document.getElementById('qrErrorMsg').innerText = "Tidak dapat mengakses kamera. Pastikan kamera tidak sedang digunakan.";
+            }
+        }
+    }
+
+    function hentiKamera() {
+        if (scanAnimation) cancelAnimationFrame(scanAnimation);
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+            qrVideo.srcObject = null;
+        }
+    }
+
+    function scanFrame() {
+        if (qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
+            qrCanvas.width = qrVideo.videoWidth;
+            qrCanvas.height = qrVideo.videoHeight;
+            
+            qrContext.drawImage(qrVideo, 0, 0, qrCanvas.width, qrCanvas.height);
+            const imageData = qrContext.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+            
+            try {
+                if (typeof jsQR !== 'undefined') {
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: "dontInvert",
+                    });
+                    
+                    if (code && code.data) {
+                        prosesHasilQR(code.data);
+                        return; // Berhenti looping jika QR ditemukan
+                    }
+                }
+            } catch (err) {
+                console.error("Error QR parsing:", err);
+            }
+        }
+        scanAnimation = requestAnimationFrame(scanFrame);
+    }
+
+    function prosesHasilQR(kodeHasil) {
+        tutupModalQR();
+        
+        const select = document.getElementById('nasabahSelect');
+        const options = select.options;
+        let ditemukan = false;
+
+        for (let i = 0; i < options.length; i++) {
+            // Mencocokkan kode QR dengan data-kode yang ada di dropdown
+            if (options[i].dataset.kode === kodeHasil) {
+                select.value = options[i].value;
+                handleNasabahSelect(); // Render UI nasabahCard
+                ditemukan = true;
+                break;
+            }
+        }
+
+        if (!ditemukan) {
+            alert(`Nasabah dengan kode QR "${kodeHasil}" tidak ditemukan di database.`);
+        }
+    }
+
+    // === LOGIKA MODAL INPUT & KERANJANG ===
     let cart = [];
     let itemAktif = null;
 
@@ -177,16 +357,13 @@
     function bukaModal(id, nama, harga, emisi) {
         itemAktif = { id, nama, harga, emisi };
         
-        // Set info di modal
         document.getElementById('modalNamaSampah').innerText = nama;
         document.getElementById('modalHargaSampah').innerText = `Rp ${formatRp(harga)} per kilogram`;
         document.getElementById('inputBeratModal').value = '';
         document.getElementById('modalSubtotalTxt').innerText = 'Rp 0';
 
-        // Animasi buka
         modal.classList.remove('hidden');
         modal.classList.add('flex');
-        // setTimeout trik agar transisi CSS berjalan
         setTimeout(() => {
             modal.classList.remove('opacity-0');
             modalBox.classList.remove('scale-95');
@@ -196,7 +373,6 @@
     }
 
     function tutupModal() {
-        // Animasi tutup
         modal.classList.add('opacity-0');
         modalBox.classList.add('scale-95');
         setTimeout(() => {
@@ -220,7 +396,6 @@
             return;
         }
 
-        // Cek apakah item sudah ada di keranjang
         const existingIndex = cart.findIndex(item => item.kategori_id === itemAktif.id);
         
         if (existingIndex > -1) {
@@ -267,7 +442,6 @@
                 grandTotalNilai += subTotalNilai;
                 grandTotalCo2 += subTotalCo2;
 
-                // Buat Elemen HTML Item Keranjang
                 container.innerHTML += `
                     <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
                         <div class="flex items-center gap-4">
@@ -292,11 +466,9 @@
             });
         }
 
-        // Update Total
         document.getElementById('totalNilaiTxt').innerText = `Rp ${formatRp(grandTotalNilai)}`;
         document.getElementById('totalCo2Txt').innerText = grandTotalCo2.toFixed(2);
         
-        // Update input hidden untuk disubmit ke backend
         document.getElementById('cartDataInput').value = JSON.stringify(cart);
     }
 
@@ -311,7 +483,6 @@
             return;
         }
         
-        // Submit form
         document.getElementById('formTransaksi').submit();
     }
 </script>
