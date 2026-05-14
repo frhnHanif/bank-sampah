@@ -13,6 +13,20 @@
         </div>
     @endif
 
+    @if($errors->any())
+        <div class="bg-red-100 text-red-700 px-4 py-3 rounded-xl mb-6 font-medium border border-red-200">
+            <div class="flex items-center mb-2">
+                <i class="fa-solid fa-triangle-exclamation mr-2"></i>
+                <strong>Transaksi Gagal Disimpan:</strong>
+            </div>
+            <ul class="list-disc list-inside text-sm">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form id="formTransaksi" action="{{ route('setor.store') }}" method="POST">
         @csrf
         <input type="hidden" name="cart_data" id="cartDataInput">

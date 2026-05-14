@@ -52,7 +52,7 @@
         </div>
 
         <div class="hidden lg:flex items-center bg-gray-50 p-1 rounded-full border border-gray-200 shadow-inner">
-            <a href="#" class="text-gray-400 hover:text-gray-800 font-medium px-5 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2 cursor-not-allowed">
+            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'bg-white shadow-sm text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-800 font-medium' }} px-5 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2">
                 <i class="fa-solid fa-border-all"></i> Dashboard
             </a>
 
@@ -80,7 +80,7 @@
     </nav>
 
     <nav class="lg:hidden fixed bottom-4 left-4 right-4 z-50 bg-gray-50/95 backdrop-blur-xl p-1.5 rounded-[2rem] border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex justify-between items-center">
-        <a href="#" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 text-gray-400">
+        <a href="{{ route('dashboard') }}" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 text-gray-400">
             <i class="fa-solid fa-border-all text-lg mb-0.5"></i>
             <span class="text-[10px] tracking-wide">Home</span>
         </a>

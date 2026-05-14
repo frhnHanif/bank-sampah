@@ -26,7 +26,9 @@
                 <td class="p-4 font-medium">{{ $item->nama }}</td>
                 <td class="p-4">Rp {{ number_format($item->harga_beli_per_kg, 0, ',', '.') }}</td>
                 <td class="p-4">{{ $item->faktor_emisi }}</td>
-                <td class="p-4">
+                <td class="p-4 flex gap-4">
+                    <a href="{{ route('kategori.edit', $item->id) }}" class="text-blue-500 hover:text-blue-700 font-semibold">Edit</a>
+                    
                     <form action="{{ route('kategori.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
                         @csrf
                         @method('DELETE')
