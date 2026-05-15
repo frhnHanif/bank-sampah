@@ -201,7 +201,7 @@
                     Batal
                 </button>
                 <button type="submit" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold transition-colors shadow-sm">
-                    Simpan Perubahan
+                    Simpan
                 </button>
             </div>
         </form>

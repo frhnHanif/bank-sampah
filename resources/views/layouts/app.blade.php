@@ -69,13 +69,13 @@
         </div>
 
         <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div class="bg-white px-2 py-1.5 sm:px-3 sm:py-2 rounded-full border border-gray-200 shadow-sm flex items-center justify-center">
+            <div class="bg-white px-2 py-1.5 sm:px-3 sm:py-2  flex items-center justify-center">
                 <img src="{{ asset('img/desktop_icon.png') }}" alt="Sponsor Logos Desktop" class="hidden md:block h-7 object-contain">
                 
-                <img src="{{ asset('img/mobile_icon.png') }}" alt="Sponsor Logos Mobile" class="block md:hidden h-5 object-contain">
+                <img src="{{ asset('img/mobile_icon.png') }}" alt="Sponsor Logos Mobile" class="block md:hidden h-7 object-contain">
             </div>
 
-            <div class="w-10 h-10 bg-gray-50 border border-gray-200 rounded-full hidden sm:flex items-center justify-center text-gray-400 cursor-default shadow-inner">
+            <div class="w-10 h-10 bg-gray-50 border border-gray-200 rounded-full flex items-center justify-center text-gray-400 cursor-default shadow-inner">
                 <i class="fa-solid fa-user-shield text-sm"></i>
             </div>
         </div>

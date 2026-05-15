@@ -77,9 +77,13 @@
             
             <div class="relative bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-6 text-white shadow-lg shadow-emerald-200">
                 
-                <button type="button" onclick="bukaModalEdit()" class="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center transition-colors backdrop-blur-sm tooltip" title="Edit Profil Nasabah">
-                    <i class="fa-solid fa-pen text-sm"></i>
-                </button>
+                <a href="{{ route('tabungan.idcard', $nasabah->id) }}" 
+                    target="_blank"
+                    class="inline-flex items-center gap-2 bg-white border border-emerald-500 text-emerald-600 hover:bg-emerald-50 px-4 py-2 rounded-lg font-bold text-sm transition-all shadow-sm mb-2" 
+                    title="Cetak ID Card Nasabah">
+                    <i class="fa-solid fa-address-card"></i>
+                    Cetak ID Card
+                </a>
 
                 <div class="flex items-center gap-3 mb-6 pr-8">
                     <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl backdrop-blur-sm shrink-0">

@@ -19,3 +19,4 @@ Route::resource('setor', TransaksiSetorController::class);
 Route::get('/nasabah/{id}/tabungan', [TabunganController::class, 'show'])->name('tabungan.show');
 Route::post('/nasabah/{id}/tabungan/tarik', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
 Route::get('/nasabah/{id}/tabungan/pdf', [TabunganController::class, 'exportPdf'])->name('tabungan.pdf');
+Route::get('/nasabah/{id}/id-card', [App\Http\Controllers\TabunganController::class, 'generateIdCard'])->name('tabungan.idcard');

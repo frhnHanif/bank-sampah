@@ -7,6 +7,7 @@ use App\Models\MutasiTabungan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class TabunganController extends Controller
 {
@@ -81,5 +82,20 @@ class TabunganController extends Controller
 
         // Download otomatis dengan nama file dinamis
         return $pdf->stream('Buku_Tabungan_' . str_replace(' ', '_', $nasabah->nama) . '.pdf');
+    }
+
+    public function generateIdCard($id)
+    {
+        $nasabah = Nasabah::findOrFail($id);
+        
+        // Generate QR Code dalam bentuk Base64 agar bisa dirender DomPDF
+        $qrcode = base64_encode(QrCode::format('svg')->size(150)->errorCorrection('H')->generate($nasabah->kode));
+
+        $pdf = Pdf::loadView('tabungan.id_card', compact('nasabah', 'qrcode'));
+        
+        // Atur ukuran kertas ke A6 Portrait (105mm x 148mm)
+        $pdf->setPaper([0, 0, 297.64, 419.53], 'portrait'); 
+
+        return $pdf->stream('ID_Card_' . $nasabah->kode . '.pdf');
     }
 }
