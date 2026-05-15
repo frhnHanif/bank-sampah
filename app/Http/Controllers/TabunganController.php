@@ -6,6 +6,7 @@ use App\Models\Nasabah;
 use App\Models\MutasiTabungan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TabunganController extends Controller
 {
@@ -61,5 +62,24 @@ class TabunganController extends Controller
             DB::rollBack();
             return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
+    }
+    
+    // FUNGSI BARU UNTUK EXPORT PDF
+    public function exportPdf($id)
+    {
+        $nasabah = Nasabah::with('tabungan')->findOrFail($id);
+        
+        $mutasi = MutasiTabungan::where('nasabah_id', $id)
+                    ->orderBy('tanggal', 'asc') // Urutkan dari yang terlama untuk di buku cetak
+                    ->get();
+
+        // Load view HTML khusus PDF
+        $pdf = Pdf::loadView('tabungan.pdf', compact('nasabah', 'mutasi'));
+        
+        // Atur ukuran kertas ke A4 Portrait
+        $pdf->setPaper('A4', 'portrait');
+
+        // Download otomatis dengan nama file dinamis
+        return $pdf->stream('Buku_Tabungan_' . str_replace(' ', '_', $nasabah->nama) . '.pdf');
     }
 }

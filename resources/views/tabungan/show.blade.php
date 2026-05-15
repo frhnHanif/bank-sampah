@@ -30,9 +30,13 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+        <div class="lg:col-span-2 order-2 lg:order-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
             <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <h3 class="font-bold text-gray-800"><i class="fa-solid fa-clock-rotate-left mr-2 text-gray-400"></i>Riwayat Transaksi</h3>
+                
+                <a href="{{ route('tabungan.pdf', $nasabah->id) }}" target="_blank" class="text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:text-emerald-600 hover:border-emerald-300 px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2 tooltip" title="Fitur Ekspor PDF">
+                    <i class="fa-solid fa-file-pdf text-red-500"></i> <span class="hidden sm:inline">Ekspor PDF</span>
+                </a>
             </div>
             
             <div class="overflow-x-auto flex-1">
@@ -51,10 +55,7 @@
                             <td class="p-4 text-sm text-gray-600 font-medium">{{ \Carbon\Carbon::parse($m->tanggal)->format('d/m/Y') }}</td>
                             <td class="p-4 text-sm text-gray-600">
                                 {{ $m->keterangan }}
-                                @if($m->ref_transaksi_setor_id)
-                                    <a href="#" class="text-xs text-emerald-500 hover:underline ml-1">(Lihat Nota)</a>
-                                @endif
-                            </td>
+                                </td>
                             <td class="p-4 text-sm font-bold text-right text-emerald-600">
                                 {{ $m->jenis == 'kredit' ? '+ Rp ' . number_format($m->jumlah, 0, ',', '.') : '-' }}
                             </td>
@@ -72,7 +73,7 @@
             </div>
         </div>
 
-        <div class="lg:col-span-1 space-y-6">
+        <div class="lg:col-span-1 order-1 lg:order-2 space-y-6">
             
             <div class="relative bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-6 text-white shadow-lg shadow-emerald-200">
                 
@@ -94,32 +95,12 @@
                 <h1 class="text-4xl font-black tracking-tight truncate">
                     Rp {{ number_format($nasabah->tabungan ? $nasabah->tabungan->saldo_saat_ini : 0, 0, ',', '.') }}
                 </h1>
-            </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h3 class="font-bold text-gray-800 mb-4"><i class="fa-solid fa-money-bill-transfer mr-2 text-emerald-500"></i>Tarik Tunai</h3>
-                
-                <form action="{{ route('tabungan.tarik', $nasabah->id) }}" method="POST" class="space-y-4">
-                    @csrf
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tanggal Penarikan</label>
-                        <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Jumlah Tarik (Rp)</label>
-                        <input type="number" name="jumlah" placeholder="Contoh: 50000" min="100" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 text-lg font-bold text-gray-700">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Keterangan (Opsional)</label>
-                        <input type="text" name="keterangan" placeholder="Contoh: Beli token listrik" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
-                    </div>
-
-                    <button type="submit" class="w-full bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold py-3 rounded-xl transition-colors mt-2" onclick="return confirm('Proses penarikan dana ini?')">
-                        Proses Penarikan
+                <div class="mt-6 pt-5 border-t border-emerald-400/30">
+                    <button type="button" onclick="bukaModalTarik()" class="w-full bg-white text-emerald-700 hover:bg-emerald-50 font-black py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-hand-holding-dollar text-lg"></i> Tarik Tunai
                     </button>
-                </form>
+                </div>
             </div>
 
         </div>
@@ -140,7 +121,6 @@
             @csrf
             @method('PUT')
             <div class="p-6 space-y-4">
-                
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nama Lengkap</label>
                     <input type="text" name="nama" required value="{{ $nasabah->nama }}"
@@ -179,15 +159,62 @@
     </div>
 </div>
 
+<div id="modalTarikTunai" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300" id="modalTarikBox">
+        
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h3 class="font-bold text-gray-800"><i class="fa-solid fa-money-bill-transfer mr-2 text-emerald-500"></i>Form Tarik Tunai</h3>
+            <button type="button" onclick="tutupModalTarik()" class="text-gray-400 hover:text-red-500 transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <form action="{{ route('tabungan.tarik', $nasabah->id) }}" method="POST">
+            @csrf
+            <div class="p-6 space-y-4">
+                
+                <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-center mb-2">
+                    <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">Saldo Tersedia</p>
+                    <h3 class="text-2xl font-black text-emerald-700">Rp {{ number_format($nasabah->tabungan ? $nasabah->tabungan->saldo_saat_ini : 0, 0, ',', '.') }}</h3>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tanggal Penarikan</label>
+                    <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Jumlah Tarik (Rp)</label>
+                    <input type="number" name="jumlah" placeholder="Contoh: 50000" min="100" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 text-lg font-bold text-gray-700">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Keterangan (Opsional)</label>
+                    <input type="text" name="keterangan" placeholder="Contoh: Beli token listrik" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-100 flex gap-3 bg-gray-50/50">
+                <button type="button" onclick="tutupModalTarik()" class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 py-2.5 rounded-xl font-bold transition-colors">
+                    Batal
+                </button>
+                <button type="submit" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold transition-colors shadow-sm" onclick="return confirm('Proses penarikan dana ini?')">
+                    Proses Tarik
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @push('scripts')
 <script>
+    // === MODAL EDIT ===
     const modalEdit = document.getElementById('modalEditNasabah');
     const modalEditBox = document.getElementById('modalEditBox');
 
     function bukaModalEdit() {
         modalEdit.classList.remove('hidden');
         modalEdit.classList.add('flex');
-        
         setTimeout(() => {
             modalEdit.classList.remove('opacity-0');
             modalEditBox.classList.remove('scale-95');
@@ -197,10 +224,31 @@
     function tutupModalEdit() {
         modalEdit.classList.add('opacity-0');
         modalEditBox.classList.add('scale-95');
-        
         setTimeout(() => {
             modalEdit.classList.add('hidden');
             modalEdit.classList.remove('flex');
+        }, 300);
+    }
+
+    // === MODAL TARIK TUNAI ===
+    const modalTarik = document.getElementById('modalTarikTunai');
+    const modalTarikBox = document.getElementById('modalTarikBox');
+
+    function bukaModalTarik() {
+        modalTarik.classList.remove('hidden');
+        modalTarik.classList.add('flex');
+        setTimeout(() => {
+            modalTarik.classList.remove('opacity-0');
+            modalTarikBox.classList.remove('scale-95');
+        }, 10);
+    }
+
+    function tutupModalTarik() {
+        modalTarik.classList.add('opacity-0');
+        modalTarikBox.classList.add('scale-95');
+        setTimeout(() => {
+            modalTarik.classList.add('hidden');
+            modalTarik.classList.remove('flex');
         }, 300);
     }
 </script>

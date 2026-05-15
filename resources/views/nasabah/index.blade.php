@@ -6,7 +6,7 @@
         <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Data Nasabah</h1>
         <p class="text-sm text-gray-500">Kelola informasi warga yang terdaftar sebagai nasabah bank sampah.</p>
     </div>
-    <button type="button" onclick="bukaModalCreate()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-emerald-700 transition shadow-sm flex items-center gap-2">
+    <button type="button" onclick="bukaModalCreate()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-emerald-700 transition shadow-sm flex items-center gap-2 w-full sm:w-auto justify-center">
         <i class="fa-solid fa-user-plus"></i> Tambah Nasabah
     </button>
 </div>
@@ -28,57 +28,77 @@
     </div>
 @endif
 
-<div class="bg-white shadow-sm border border-gray-100 rounded-2xl overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-gray-50 text-gray-600 border-b border-gray-100">
-                    <th class="p-4 font-bold text-sm uppercase tracking-wider">Kode</th>
-                    <th class="p-4 font-bold text-sm uppercase tracking-wider">Nama Lengkap</th>
-                    <th class="p-4 font-bold text-sm uppercase tracking-wider text-center">RT/RW</th>
-                    <th class="p-4 font-bold text-sm uppercase tracking-wider">No. HP</th>
-                    <th class="p-4 font-bold text-sm uppercase tracking-wider text-center">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-                @forelse($nasabah as $item)
-                <tr class="hover:bg-gray-50/50 transition-colors">
-                    <td class="p-4 font-mono text-sm font-bold text-emerald-600">{{ $item->kode }}</td>
-                    <td class="p-4 font-semibold text-gray-700">{{ $item->nama }}</td>
-                    <td class="p-4 text-center text-gray-600">
-                        <span class="px-2 py-1 bg-gray-100 rounded-md text-xs font-bold">{{ $item->rt }} / {{ $item->rw }}</span>
-                    </td>
-                    <td class="p-4 text-gray-600">{{ $item->no_hp ?? '-' }}</td>
-                    
-                    <td class="p-4 text-center">
-                        <div class="flex items-center justify-center gap-2">
-                            <a href="{{ route('tabungan.show', $item->id) }}" class="text-emerald-500 hover:text-emerald-700 transition p-2 bg-emerald-50 rounded-lg hover:bg-emerald-100 tooltip" title="Buku Tabungan">
-                                <i class="fa-solid fa-book"></i>
-                            </a>
+<div class="mb-6 relative">
+    <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+        <i class="fa-solid fa-magnifying-glass text-gray-400 text-lg"></i>
+    </div>
+    <input type="text" id="searchInput" onkeyup="cariNasabah()" placeholder="Cari nama nasabah, kode ID, RT, atau No HP..." 
+        class="w-full bg-white border border-gray-200 text-gray-700 rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm transition-all font-medium text-sm sm:text-base">
+</div>
 
-                            <button type="button" onclick="bukaModalEdit({{ $item->id }}, '{{ addslashes($item->nama) }}', '{{ $item->rt }}', '{{ $item->rw }}', '{{ $item->no_hp }}')" class="text-blue-500 hover:text-blue-700 transition p-2 bg-blue-50 rounded-lg hover:bg-blue-100 tooltip" title="Edit Nasabah">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            
-                            <form action="{{ route('nasabah.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus nasabah ini?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-400 hover:text-red-600 transition p-2 bg-red-50 rounded-lg hover:bg-red-100 tooltip" title="Hapus">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                    </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="p-8 text-center text-gray-400 italic">
-                        Belum ada nasabah terdaftar.
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="nasabahGrid">
+    @forelse($nasabah as $item)
+    <div class="nasabah-card bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col relative overflow-hidden group hover:shadow-md transition-shadow" 
+         data-search="{{ strtolower($item->kode . ' ' . $item->nama . ' rt ' . $item->rt . ' rw ' . $item->rw . ' ' . $item->no_hp) }}">
+        
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
+
+        <div class="flex items-start gap-4 mb-5 pt-2">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-xl shrink-0">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="overflow-hidden">
+                <span class="text-[10px] font-black text-emerald-500 uppercase tracking-wider">{{ $item->kode }}</span>
+                <h3 class="font-bold text-gray-800 leading-tight truncate" title="{{ $item->nama }}">{{ $item->nama }}</h3>
+            </div>
+        </div>
+
+        <div class="space-y-2 mb-6 flex-1">
+            <div class="flex items-center gap-3 text-sm text-gray-600">
+                <div class="w-6 text-center text-gray-400"><i class="fa-solid fa-map-location-dot"></i></div>
+                <span>RT {{ $item->rt }} / RW {{ $item->rw }}</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm text-gray-600">
+                <div class="w-6 text-center text-gray-400"><i class="fa-solid fa-phone"></i></div>
+                <span>{{ $item->no_hp ?? 'Belum ada No. HP' }}</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-4 border-t border-gray-50">
+            <a href="{{ route('tabungan.show', $item->id) }}" class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 py-2.5 rounded-xl text-sm font-bold transition-colors">
+                <i class="fa-solid fa-book"></i> Tabungan
+            </a>
+            <button type="button" onclick="bukaModalEdit({{ $item->id }}, '{{ addslashes($item->nama) }}', '{{ $item->rt }}', '{{ $item->rw }}', '{{ $item->no_hp }}')" class="w-11 h-11 flex items-center justify-center bg-blue-50 text-blue-500 hover:bg-blue-100 rounded-xl transition-colors shrink-0" title="Edit">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <form action="{{ route('nasabah.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus data nasabah ini secara permanen?')" class="shrink-0">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="w-11 h-11 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors" title="Hapus">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    @empty
+    <div class="col-span-full bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center flex flex-col items-center justify-center">
+        <div class="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mb-4 text-2xl">
+            <i class="fa-solid fa-users-slash"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-700">Belum ada nasabah terdaftar</h3>
+        <p class="text-gray-500 mt-1 mb-6">Silakan daftarkan warga sebagai nasabah baru untuk memulai transaksi.</p>
+        <button type="button" onclick="bukaModalCreate()" class="bg-emerald-100 text-emerald-700 px-6 py-2.5 rounded-full font-bold hover:bg-emerald-200 transition">
+            Daftarkan Nasabah Pertama
+        </button>
+    </div>
+    @endforelse
+
+    <div id="emptySearchState" class="hidden col-span-full bg-white rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center flex-col items-center justify-center">
+        <div class="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mb-4 text-2xl mx-auto">
+            <i class="fa-solid fa-magnifying-glass-minus"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-700">Pencarian tidak ditemukan</h3>
+        <p class="text-gray-500 mt-1">Kata kunci yang kamu ketik tidak cocok dengan nasabah manapun.</p>
     </div>
 </div>
 
@@ -190,6 +210,39 @@
 
 @push('scripts')
 <script>
+    // === FITUR PENCARIAN NASABAH REAL-TIME ===
+    function cariNasabah() {
+        let input = document.getElementById('searchInput').value.toLowerCase();
+        let cards = document.querySelectorAll('.nasabah-card');
+        let emptyState = document.getElementById('emptySearchState');
+        let hasResult = false;
+
+        cards.forEach(card => {
+            let textData = card.getAttribute('data-search');
+            
+            // Jika teks pencarian cocok dengan data di kartu
+            if (textData.includes(input)) {
+                card.classList.remove('hidden');
+                card.classList.add('flex'); // kembalikan ke format flex bawaan tailwind
+                hasResult = true;
+            } else {
+                card.classList.add('hidden');
+                card.classList.remove('flex');
+            }
+        });
+
+        // Menampilkan pesan jika tidak ada kartu yang cocok
+        if (cards.length > 0) {
+            if (!hasResult) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+            }
+        }
+    }
+
     // === MODAL CREATE ===
     const modalCreate = document.getElementById('modalCreate');
     const modalCreateBox = document.getElementById('modalCreateBox');
@@ -218,14 +271,11 @@
     const formEdit = document.getElementById('formEditNasabah');
 
     function bukaModalEdit(id, nama, rt, rw, no_hp) {
-        // Set action form URL dinamis
         formEdit.action = `/nasabah/${id}`;
-        
-        // Isi inputan
         document.getElementById('editNama').value = nama;
         document.getElementById('editRt').value = rt;
         document.getElementById('editRw').value = rw;
-        document.getElementById('editNoHp').value = no_hp || ''; // handle null
+        document.getElementById('editNoHp').value = no_hp || ''; 
 
         modalEdit.classList.remove('hidden');
         modalEdit.classList.add('flex');
