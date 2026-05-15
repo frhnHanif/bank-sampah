@@ -36,22 +36,24 @@
             <label class="block font-bold text-gray-800 mb-3">Cari Nasabah</label>
             
             <div class="relative flex items-center gap-3" id="nasabahInputContainer">
-                <div class="relative flex-1">
+                <div class="relative flex-1" id="searchWrapper">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                         <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
                     </div>
-                    <select name="nasabah_id" id="nasabahSelect" onchange="handleNasabahSelect()" required class="w-full bg-white border border-gray-200 text-gray-700 rounded-xl pl-10 pr-4 py-3 appearance-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm transition-all">
-                        <option value="" disabled selected>Ketik atau pilih nama nasabah...</option>
-                        @foreach($nasabah as $n)
-                            <option value="{{ $n->id }}" 
-                                data-kode="{{ $n->kode }}" 
-                                data-saldo="{{ $n->tabungan ? $n->tabungan->saldo_saat_ini : 0 }}">
-                                {{ $n->nama }}
-                            </option>
-                        @endforeach
-                    </select>
+                    
+                    <input type="hidden" name="nasabah_id" id="nasabahIdInput" required>
+                    
+                    <input type="text" id="searchInput" autocomplete="off" 
+                        placeholder="Ketik ID atau nama nasabah..." 
+                        oninput="handleSearch()"
+                        onfocus="handleSearch()"
+                        class="w-full bg-white border border-gray-200 text-gray-700 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm transition-all">
+                    
+                    <div id="searchResults" class="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto divide-y divide-gray-50">
+                        </div>
                 </div>
-                <button type="button" onclick="bukaModalQR()" class="w-12 h-12 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-emerald-600 hover:bg-emerald-50 transition shadow-sm">
+
+                <button type="button" onclick="bukaModalQR()" class="w-12 h-12 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-emerald-600 hover:bg-emerald-50 transition shadow-sm flex-shrink-0">
                     <i class="fa-solid fa-qrcode"></i>
                 </button>
             </div>
@@ -67,8 +69,12 @@
         </div>
 
         <div class="mb-8">
-            <label class="block font-bold text-gray-800 mb-3">Pilih Jenis Sampah</label>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div class="flex justify-between items-end mb-3">
+                <label class="block font-bold text-gray-800">Pilih Jenis Sampah</label>
+                <span id="kategoriWarning" class="text-xs text-red-500 font-medium bg-red-50 px-2 py-1 rounded">Pilih nasabah terlebih dahulu!</span>
+            </div>
+            
+            <div id="kategoriContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 opacity-50 transition-all duration-300">
                 @foreach($kategori as $k)
                     <button type="button" onclick="bukaModal({{ $k->id }}, '{{ $k->nama }}', {{ $k->harga_beli_per_kg }}, {{ $k->faktor_emisi }})" 
                         class="bg-white border border-gray-200 rounded-2xl p-6 text-center hover:border-emerald-500 hover:shadow-md transition-all group focus:outline-none focus:ring-2 focus:ring-emerald-500">
@@ -208,30 +214,96 @@
     };
 
     // === LOGIKA NASABAH ===
-    function handleNasabahSelect() {
-        const select = document.getElementById('nasabahSelect');
-        const card = document.getElementById('nasabahCard');
-        const container = document.getElementById('nasabahInputContainer');
+    // === DATA NASABAH (Dikirim dari Controller) ===
+    const nasabahMentah = @json($nasabah);
+    const daftarNasabah = nasabahMentah.map(n => ({
+        id: n.id,
+        kode: n.kode,
+        nama: n.nama,
+        saldo: n.tabungan ? parseFloat(n.tabungan.saldo_saat_ini) : 0
+    }));
+
+    // === LOGIKA LIVE SEARCH NASABAH ===
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const nasabahIdInput = document.getElementById('nasabahIdInput');
+    const container = document.getElementById('nasabahInputContainer');
+    const card = document.getElementById('nasabahCard');
+
+    function handleSearch() {
+        const query = searchInput.value.toLowerCase();
+        searchResults.innerHTML = ''; // Kosongkan hasil sebelumnya
         
-        if (select.value) {
-            const option = select.options[select.selectedIndex];
-            
-            // Set Data ke Card
-            document.getElementById('infoNamaNasabah').innerText = option.text;
-            document.getElementById('infoKodeNasabah').innerText = option.dataset.kode;
-            document.getElementById('infoSaldoNasabah').innerText = formatRp(option.dataset.saldo);
-            
-            // Sembunyikan Input, Tampilkan Card
-            container.classList.add('hidden');
-            card.classList.remove('hidden');
+        // Minimal ketik 2 huruf baru mencari
+        if (query.length < 2) {
+            searchResults.classList.add('hidden');
+            if (query.length === 0) nasabahIdInput.value = ''; // Reset jika dihapus
+            return;
         }
+        
+        // Filter array data nasabah
+        const filtered = daftarNasabah.filter(n => 
+            n.nama.toLowerCase().includes(query) || 
+            n.kode.toLowerCase().includes(query)
+        );
+        
+        // Render Hasil
+        if (filtered.length > 0) {
+            filtered.forEach(n => {
+                const div = document.createElement('div');
+                div.className = 'p-3 hover:bg-emerald-50 cursor-pointer transition-colors';
+                div.innerHTML = `
+                    <p class="font-bold text-gray-800">${n.nama}</p>
+                    <p class="text-xs text-gray-500">ID: ${n.kode}</p>
+                `;
+                // Jika diklik, pilih nasabah ini
+                div.onclick = () => pilihNasabah(n);
+                searchResults.appendChild(div);
+            });
+        } else {
+            searchResults.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">Nasabah tidak ditemukan.</div>';
+        }
+        
+        searchResults.classList.remove('hidden');
+    }
+
+    function pilihNasabah(nasabah) {
+        // Set Nilai Input
+        nasabahIdInput.value = nasabah.id;
+        searchInput.value = nasabah.nama;
+        searchResults.classList.add('hidden');
+        
+        // Set Info Card
+        document.getElementById('infoNamaNasabah').innerText = nasabah.nama;
+        document.getElementById('infoKodeNasabah').innerText = nasabah.kode;
+        document.getElementById('infoSaldoNasabah').innerText = formatRp(nasabah.saldo);
+        
+        // Sembunyikan Input, Tampilkan Card
+        container.classList.add('hidden');
+        card.classList.remove('hidden');
+
+        // Buka Kunci Menu Sampah
+        document.getElementById('kategoriContainer').classList.remove('opacity-50');
+        document.getElementById('kategoriWarning').classList.add('hidden');
     }
 
     function resetNasabah() {
-        document.getElementById('nasabahSelect').value = '';
-        document.getElementById('nasabahInputContainer').classList.remove('hidden');
-        document.getElementById('nasabahCard').classList.add('hidden');
+        nasabahIdInput.value = '';
+        searchInput.value = '';
+        container.classList.remove('hidden');
+        card.classList.add('hidden');
+
+        // Kunci Kembali Menu Sampah
+        document.getElementById('kategoriContainer').classList.add('opacity-50');
+        document.getElementById('kategoriWarning').classList.remove('hidden');
     }
+
+    // Event Listener: Tutup dropdown jika klik di luar area pencarian
+    document.addEventListener('click', function(event) {
+        if (!document.getElementById('searchWrapper').contains(event.target)) {
+            searchResults.classList.add('hidden');
+        }
+    });
 
     // === LOGIKA QR SCANNER ===
     let videoStream = null;
@@ -342,22 +414,13 @@
     function prosesHasilQR(kodeHasil) {
         tutupModalQR();
         
-        const select = document.getElementById('nasabahSelect');
-        const options = select.options;
-        let ditemukan = false;
+        // Cari nasabah di dalam array daftarNasabah berdasarkan kode QR
+        const nasabahDitemukan = daftarNasabah.find(n => n.kode === kodeHasil);
 
-        for (let i = 0; i < options.length; i++) {
-            // Mencocokkan kode QR dengan data-kode yang ada di dropdown
-            if (options[i].dataset.kode === kodeHasil) {
-                select.value = options[i].value;
-                handleNasabahSelect(); // Render UI nasabahCard
-                ditemukan = true;
-                break;
-            }
-        }
-
-        if (!ditemukan) {
-            alert(`Nasabah dengan kode QR "${kodeHasil}" tidak ditemukan di database.`);
+        if (nasabahDitemukan) {
+            pilihNasabah(nasabahDitemukan); // Render UI
+        } else {
+            alert(`Nasabah dengan kode QR "${kodeHasil}" tidak ditemukan.`);
         }
     }
 
@@ -369,6 +432,18 @@
     const modalBox = document.getElementById('modalBox');
 
     function bukaModal(id, nama, harga, emisi) {
+        // VALIDASI BARU: Cegah modal terbuka jika nasabah kosong
+        if (!document.getElementById('nasabahIdInput').value) {
+            // Berikan efek highlight/kedip pada teks peringatan agar user menyadari kesalahannya
+            const warning = document.getElementById('kategoriWarning');
+            warning.classList.remove('hidden');
+            warning.classList.add('animate-pulse', 'ring-2', 'ring-red-200');
+            setTimeout(() => {
+                warning.classList.remove('animate-pulse', 'ring-2', 'ring-red-200');
+            }, 1500);
+            return; // Batalkan proses buka modal
+        }
+
         itemAktif = { id, nama, harga, emisi };
         
         document.getElementById('modalNamaSampah').innerText = nama;
@@ -487,7 +562,7 @@
     }
 
     function simpanTransaksi() {
-        const nasabahId = document.getElementById('nasabahSelect').value;
+        const nasabahId = document.getElementById('nasabahIdInput').value;
         if (!nasabahId) {
             alert('Mohon pilih nasabah terlebih dahulu!');
             return;
