@@ -62,6 +62,26 @@ class NasabahController extends Controller
     return redirect()->route('nasabah.index')->with('success', "Nasabah berhasil didaftarkan dengan Kode: $finalKode");
     }
 
+    public function update(Request $request, Nasabah $nasabah)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'rt'   => 'required|string|max:3',
+            'rw'   => 'required|string|max:3',
+            'no_hp' => 'nullable|string|max:15',
+        ]);
+
+        $nasabah->update([
+            'nama' => $request->nama,
+            'rt'   => $request->rt,
+            'rw'   => $request->rw,
+            'no_hp' => $request->no_hp,
+        ]);
+
+        // Karena kita mengubahnya dari halaman Buku Tabungan, kita kembalikan user ke halaman tersebut
+        return back()->with('success', 'Data profil nasabah berhasil diperbarui!');
+    }
+
     public function destroy(Nasabah $nasabah)
     {
         $nasabah->delete();

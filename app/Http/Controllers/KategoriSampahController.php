@@ -13,10 +13,7 @@ class KategoriSampahController extends Controller
         return view('kategori.index', compact('kategori'));
     }
 
-    public function create()
-    {
-        return view('kategori.create');
-    }
+    // Fungsi create() dan edit() sudah BISA DIHAPUS karena menggunakan Modal di Index.
 
     public function store(Request $request)
     {
@@ -31,13 +28,6 @@ class KategoriSampahController extends Controller
         return redirect()->route('kategori.index')->with('success', 'Kategori berhasil ditambahkan!');
     }
 
-    // Method baru untuk menampilkan form edit
-    public function edit(KategoriSampah $kategori)
-    {
-        return view('kategori.edit', compact('kategori'));
-    }
-
-    // Method baru untuk memproses update data
     public function update(Request $request, KategoriSampah $kategori)
     {
         $request->validate([

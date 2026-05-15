@@ -74,19 +74,24 @@
 
         <div class="lg:col-span-1 space-y-6">
             
-            <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-6 text-white shadow-lg shadow-emerald-200">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl backdrop-blur-sm">
+            <div class="relative bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-6 text-white shadow-lg shadow-emerald-200">
+                
+                <button type="button" onclick="bukaModalEdit()" class="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center transition-colors backdrop-blur-sm tooltip" title="Edit Profil Nasabah">
+                    <i class="fa-solid fa-pen text-sm"></i>
+                </button>
+
+                <div class="flex items-center gap-3 mb-6 pr-8">
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl backdrop-blur-sm shrink-0">
                         <i class="fa-solid fa-user"></i>
                     </div>
-                    <div>
-                        <h2 class="font-bold text-lg leading-tight">{{ $nasabah->nama }}</h2>
-                        <p class="text-emerald-100 text-sm opacity-90">{{ $nasabah->kode }} • RT {{ $nasabah->rt }}/RW {{ $nasabah->rw }}</p>
+                    <div class="overflow-hidden">
+                        <h2 class="font-bold text-lg leading-tight truncate">{{ $nasabah->nama }}</h2>
+                        <p class="text-emerald-100 text-sm opacity-90 truncate">{{ $nasabah->kode }} • RT {{ $nasabah->rt }}/RW {{ $nasabah->rw }}</p>
                     </div>
                 </div>
                 
                 <p class="text-emerald-100 text-sm font-medium uppercase tracking-wider mb-1">Total Saldo Aktif</p>
-                <h1 class="text-4xl font-black tracking-tight">
+                <h1 class="text-4xl font-black tracking-tight truncate">
                     Rp {{ number_format($nasabah->tabungan ? $nasabah->tabungan->saldo_saat_ini : 0, 0, ',', '.') }}
                 </h1>
             </div>
@@ -120,4 +125,84 @@
         </div>
     </div>
 </div>
+
+<div id="modalEditNasabah" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300" id="modalEditBox">
+        
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h3 class="font-bold text-gray-800">Edit Profil Nasabah</h3>
+            <button type="button" onclick="tutupModalEdit()" class="text-gray-400 hover:text-red-500 transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <form action="{{ route('nasabah.update', $nasabah->id) }}" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="p-6 space-y-4">
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nama Lengkap</label>
+                    <input type="text" name="nama" required value="{{ $nasabah->nama }}"
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">RT</label>
+                        <input type="text" name="rt" required maxlength="3" value="{{ $nasabah->rt }}"
+                            class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none text-center">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">RW</label>
+                        <input type="text" name="rw" required maxlength="3" value="{{ $nasabah->rw }}"
+                            class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none text-center">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">No. HP / WhatsApp</label>
+                    <input type="text" name="no_hp" value="{{ $nasabah->no_hp }}"
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-100 flex gap-3 bg-gray-50/50">
+                <button type="button" onclick="tutupModalEdit()" class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 py-2.5 rounded-xl font-bold transition-colors">
+                    Batal
+                </button>
+                <button type="submit" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold transition-colors shadow-sm">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    const modalEdit = document.getElementById('modalEditNasabah');
+    const modalEditBox = document.getElementById('modalEditBox');
+
+    function bukaModalEdit() {
+        modalEdit.classList.remove('hidden');
+        modalEdit.classList.add('flex');
+        
+        setTimeout(() => {
+            modalEdit.classList.remove('opacity-0');
+            modalEditBox.classList.remove('scale-95');
+        }, 10);
+    }
+
+    function tutupModalEdit() {
+        modalEdit.classList.add('opacity-0');
+        modalEditBox.classList.add('scale-95');
+        
+        setTimeout(() => {
+            modalEdit.classList.add('hidden');
+            modalEdit.classList.remove('flex');
+        }, 300);
+    }
+</script>
+@endpush
 @endsection
