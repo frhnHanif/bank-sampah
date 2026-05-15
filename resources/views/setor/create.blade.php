@@ -204,6 +204,40 @@
     </div>
 </div>
 
+@if(session('wa_url'))
+<div id="modalWaSukses" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[150] flex items-center justify-center">
+    <div class="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden shadow-2xl transform transition-all scale-100">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-emerald-50">
+            <h3 class="font-bold text-emerald-800 flex items-center gap-2">
+                <i class="fa-brands fa-whatsapp text-emerald-500 text-xl"></i> Transaksi Sukses
+            </h3>
+            <button type="button" onclick="document.getElementById('modalWaSukses').classList.add('hidden')" class="text-gray-400 hover:text-red-500 transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        
+        <div class="p-6 text-center">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-check text-3xl"></i>
+            </div>
+            <h4 class="font-bold text-gray-800 text-lg mb-2">Kirim Nota ke Nasabah?</h4>
+            <p class="text-gray-500 text-sm mb-6">
+                Transaksi atas nama <strong>{{ session('wa_nasabah') }}</strong> berhasil disimpan. Anda dapat mengirimkan rincian nota langsung ke WhatsApp nasabah.
+            </p>
+            
+            <div class="flex gap-3">
+                <button type="button" onclick="document.getElementById('modalWaSukses').classList.add('hidden')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-bold transition-colors">
+                    Tutup
+                </button>
+                <a href="{{ session('wa_url') }}" target="_blank" onclick="document.getElementById('modalWaSukses').classList.add('hidden')" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-bold transition-colors shadow-md shadow-emerald-200 flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> Kirim WA
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 

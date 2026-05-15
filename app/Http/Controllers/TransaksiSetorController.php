@@ -107,8 +107,52 @@ class TransaksiSetorController extends Controller
             ]);
             // ==========================================
 
+            // Catat riwayat uang masuk (Kredit)
+            MutasiTabungan::create([
+                'nasabah_id' => $request->nasabah_id,
+                'tanggal'    => $request->tanggal,
+                'jenis'      => 'kredit',
+                'jumlah'     => $total_nilai,
+                'keterangan' => 'Penyetoran sampah (' . count($cart) . ' item)',
+                'ref_transaksi_setor_id' => $transaksi->id,
+            ]);
+
+            // ==========================================
+
+            // === LOGIKA WHATSAPP NOTA ===
+            $nasabah = Nasabah::find($request->nasabah_id);
+            $no_hp = $nasabah->no_hp ?? ''; 
+            
+            // Format awalan nomor agar valid di URL wa.me (ubah 0 menjadi 62)
+            if (str_starts_with($no_hp, '0')) {
+                $no_hp = '62' . substr($no_hp, 1);
+            }
+
+            // Rangkai Teks Pesan WhatsApp
+            $pesanWa = "Halo *{$nasabah->nama}*,\n";
+            $pesanWa .= "Terima kasih telah menyetor sampah di Bank Sampah. Berikut rincian transaksi Anda pada *{$request->tanggal}*:\n\n";
+            
+            foreach ($cart as $item) {
+                $kat = KategoriSampah::find($item['kategori_id']);
+                $sub = $item['berat'] * $kat->harga_beli_per_kg;
+                $pesanWa .= "• {$kat->nama} ({$item['berat']} kg) : Rp " . number_format($sub, 0, ',', '.') . "\n";
+            }
+            
+            $pesanWa .= "\n*Total Pemasukan : Rp " . number_format($total_nilai, 0, ',', '.') . "*\n";
+            $pesanWa .= "Reduksi Emisi : {$total_co2} kg CO2\n\n";
+            $pesanWa .= "Saldo tabungan Anda telah diperbarui. Mari jaga lingkungan bersama! ♻️";
+
+            // Buat URL wa.me
+            $wa_url = "https://wa.me/{$no_hp}?text=" . urlencode($pesanWa);
+            // ============================
+
             DB::commit();
-            return redirect()->route('setor.create')->with('success', 'Transaksi berhasil disimpan!');
+            
+            // Kirim link wa_url ke halaman view
+            return redirect()->route('setor.create')
+                ->with('success', 'Transaksi berhasil disimpan!')
+                ->with('wa_url', $wa_url)
+                ->with('wa_nasabah', $nasabah->nama);
 
         } catch (\Exception $e) {
             DB::rollBack();
