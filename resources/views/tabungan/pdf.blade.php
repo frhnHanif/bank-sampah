@@ -9,21 +9,30 @@
             font-size: 12px;
             color: #333;
         }
-        .header {
-            text-align: center;
+        
+        /* CSS Header Baru menggunakan Table */
+        .header-table {
+            width: 100%;
             border-bottom: 2px solid #10b981;
-            padding-bottom: 10px;
+            padding-bottom: 15px;
             margin-bottom: 20px;
         }
-        .header h1 {
+        .header-table td {
+            vertical-align: middle;
+        }
+        .header-title {
             margin: 0;
             color: #065f46;
-            font-size: 20px;
+            font-size: 18px;
+            font-weight: bold;
         }
-        .header p {
+        .header-subtitle {
             margin: 5px 0 0;
             color: #666;
+            font-size: 11px;
         }
+
+        /* CSS Tabel Info & Mutasi */
         .info-table {
             width: 100%;
             margin-bottom: 20px;
@@ -50,10 +59,13 @@
             color: #065f46;
             text-align: left;
         }
+        
+        /* Utility Classes */
         .text-right { text-align: right; }
         .text-center { text-align: center; }
         .cr { color: #059669; font-weight: bold; }
         .db { color: #dc2626; font-weight: bold; }
+        
         .saldo-box {
             float: right;
             border: 2px solid #10b981;
@@ -68,10 +80,22 @@
 </head>
 <body>
 
-    <div class="header">
-        <h1>BANK SAMPAH SIDO MAKMUR</h1>
-        <p>Laporan Riwayat Mutasi Tabungan Nasabah</p>
-    </div>
+    <table class="header-table">
+        <tr>
+            <td width="25%" style="text-align: left;">
+                <img src="{{ public_path('img/logo-kiri.png') }}" alt="Logo Bank Sampah" style="height: 45px;">
+            </td>
+            
+            <td width="50%" style="text-align: center;">
+                <h1 class="header-title">LAPORAN RIWAYAT </h1>
+                <p class="header-subtitle">MUTASI TABUNGAN NASABAH</p>
+            </td>
+            
+            <td width="25%" style="text-align: right;">
+                <img src="{{ public_path('img/desktop_icon.png') }}" alt="Logo Sponsor" style="height: 40px;">
+            </td>
+        </tr>
+    </table>
 
     <table class="info-table">
         <tr>
@@ -126,7 +150,7 @@
     </table>
 
     <p style="text-align: right; font-size: 10px; color: #999; margin-top: 30px;">
-        *Dokumen ini dicetak otomatis dari sistem pada {{ date('d/m/Y H:i') }}
+        *Dokumen ini dicetak otomatis dari sistem pada {{ date('d/m/Y H:i') }} WIB
     </p>
 
 </body>
