@@ -77,15 +77,11 @@
             
             <div class="relative bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-6 text-white shadow-lg shadow-emerald-200">
                 
-                <a href="{{ route('tabungan.idcard', $nasabah->id) }}" 
-                    target="_blank"
-                    class="inline-flex items-center gap-2 bg-white border border-emerald-500 text-emerald-600 hover:bg-emerald-50 px-4 py-2 rounded-lg font-bold text-sm transition-all shadow-sm mb-2" 
-                    title="Cetak ID Card Nasabah">
-                    <i class="fa-solid fa-address-card"></i>
-                    Cetak ID Card
-                </a>
+                <button type="button" onclick="bukaModalEdit()" class="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center transition-colors backdrop-blur-sm tooltip" title="Edit Profil Nasabah">
+                    <i class="fa-solid fa-pen text-sm"></i>
+                </button>
 
-                <div class="flex items-center gap-3 mb-6 pr-8">
+                <div class="flex items-center gap-3 mb-6 pr-8 mt-2">
                     <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl backdrop-blur-sm shrink-0">
                         <i class="fa-solid fa-user"></i>
                     </div>
@@ -100,10 +96,16 @@
                     Rp {{ number_format($nasabah->tabungan ? $nasabah->tabungan->saldo_saat_ini : 0, 0, ',', '.') }}
                 </h1>
 
-                <div class="mt-6 pt-5 border-t border-emerald-400/30">
-                    <button type="button" onclick="bukaModalTarik()" class="w-full bg-white text-emerald-700 hover:bg-emerald-50 font-black py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
+                <div class="mt-6 pt-5 border-t border-emerald-400/30 flex items-center gap-3">
+                    
+                    <button type="button" onclick="bukaModalTarik()" class="flex-1 bg-white text-emerald-700 hover:bg-emerald-50 font-black py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
                         <i class="fa-solid fa-hand-holding-dollar text-lg"></i> Tarik Tunai
                     </button>
+
+                    <a href="{{ route('tabungan.idcard', $nasabah->id) }}" target="_blank" class="w-14 h-[52px] bg-emerald-600 hover:bg-emerald-500 border border-emerald-400/50 text-white rounded-xl transition-colors shadow-sm flex items-center justify-center shrink-0 tooltip" title="Cetak QR ID Card">
+                        <i class="fa-solid fa-qrcode text-xl"></i>
+                    </a>
+
                 </div>
             </div>
 

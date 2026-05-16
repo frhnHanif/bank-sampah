@@ -59,6 +59,10 @@
                 <i class="fa-solid fa-cash-register"></i> Kasir
             </a>
             
+            <a href="{{ route('stok.index') }}" class="{{ request()->routeIs('stok.*') ? 'bg-white shadow-sm text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-800 font-medium' }} px-5 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2">
+                 <i class="fa-solid fa-boxes-stacked"></i> Stok
+             </a>
+            
             <a href="{{ route('kategori.index') }}" class="{{ request()->routeIs('kategori.*') ? 'bg-white shadow-sm text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-800 font-medium' }} px-5 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2">
                 <i class="fa-solid fa-tags"></i> Kategori
             </a>
@@ -90,6 +94,9 @@
             <i class="fa-solid fa-cash-register text-lg mb-0.5"></i>
             <span class="text-[10px] tracking-wide">Kasir</span>
         </a>
+        <a href="{{ route('stok.index') }}" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 {{ request()->routeIs('stok.*') ? 'bg-white shadow-sm text-emerald-500 font-bold' : 'text-gray-400 hover:text-gray-600 font-medium' }}">
+            <i class="fa-solid fa-boxes-stacked text-lg mb-0.5"></i>
+            <span class="text-[10px] tracking-wide">Stok</span>
         <a href="{{ route('kategori.index') }}" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 {{ request()->routeIs('kategori.*') ? 'bg-white shadow-sm text-emerald-500 font-bold' : 'text-gray-400 hover:text-gray-600 font-medium' }}">
             <i class="fa-solid fa-tags text-lg mb-0.5"></i>
             <span class="text-[10px] tracking-wide">Kategori</span>
