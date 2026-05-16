@@ -61,8 +61,12 @@
             
             <a href="{{ route('stok.index') }}" class="{{ request()->routeIs('stok.*') ? 'bg-white shadow-sm text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-800 font-medium' }} px-5 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2">
                  <i class="fa-solid fa-boxes-stacked"></i> Stok
-             </a>
-            
+            </a>
+
+            <a href="{{ route('keuangan.index') }}" class="{{ request()->routeIs('keuangan.*') ? 'bg-white shadow-sm text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-800 font-medium' }} px-5 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-wallet"></i> Keuangan
+            </a>
+
             <a href="{{ route('kategori.index') }}" class="{{ request()->routeIs('kategori.*') ? 'bg-white shadow-sm text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-800 font-medium' }} px-5 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2">
                 <i class="fa-solid fa-tags"></i> Kategori
             </a>
@@ -73,7 +77,7 @@
         </div>
 
         <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div class="bg-white px-2 py-1.5 sm:px-3 sm:py-2  flex items-center justify-center">
+            <div class="px-2 py-1.5 sm:px-3 sm:py-2  flex items-center justify-center">
                 <img src="{{ asset('img/desktop_icon.png') }}" alt="Sponsor Logos Desktop" class="hidden md:block h-7 object-contain">
                 
                 <img src="{{ asset('img/mobile_icon.png') }}" alt="Sponsor Logos Mobile" class="block md:hidden h-7 object-contain">
@@ -97,6 +101,11 @@
         <a href="{{ route('stok.index') }}" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 {{ request()->routeIs('stok.*') ? 'bg-white shadow-sm text-emerald-500 font-bold' : 'text-gray-400 hover:text-gray-600 font-medium' }}">
             <i class="fa-solid fa-boxes-stacked text-lg mb-0.5"></i>
             <span class="text-[10px] tracking-wide">Stok</span>
+        </a>
+        <a href="{{ route('keuangan.index') }}" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 {{ request()->routeIs('keuangan.*') ? 'bg-white shadow-sm text-emerald-500 font-bold' : 'text-gray-400 hover:text-gray-600 font-medium' }}">
+            <i class="fa-solid fa-wallet text-lg mb-0.5"></i>
+            <span class="text-[10px] tracking-wide">Keuangan</span>
+        </a>   
         <a href="{{ route('kategori.index') }}" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 {{ request()->routeIs('kategori.*') ? 'bg-white shadow-sm text-emerald-500 font-bold' : 'text-gray-400 hover:text-gray-600 font-medium' }}">
             <i class="fa-solid fa-tags text-lg mb-0.5"></i>
             <span class="text-[10px] tracking-wide">Kategori</span>

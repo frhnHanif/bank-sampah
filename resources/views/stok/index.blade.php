@@ -35,7 +35,7 @@
         
         <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-blue-600"></div>
 
-        <div class="flex items-center gap-3 mb-4 pt-2">
+        <div class="flex items-center gap-3 mb-6 pt-2">
             <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg shrink-0">
                 <i class="fa-solid fa-boxes-stacked"></i>
             </div>
@@ -46,28 +46,12 @@
             </div>
         </div>
 
-        <div class="mt-auto">
+        <div class="mt-auto pb-1">
             <p class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Total Tersedia</p>
             <div class="flex items-baseline gap-1">
                 <h2 class="text-3xl font-black text-blue-600">{{ number_format($item->total_berat_kg, 2, ',', '.') }}</h2>
                 <span class="text-sm font-bold text-gray-500">Kg</span>
             </div>
-        </div>
-
-        <div class="mt-4 pt-4 border-t border-gray-50">
-            @if($item->total_berat_kg > 50)
-                <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-600">
-                    <i class="fa-solid fa-circle-check"></i> Siap Dijual
-                </span>
-            @elseif($item->total_berat_kg > 0)
-                <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-600">
-                    <i class="fa-solid fa-clock"></i> Mengumpulkan
-                </span>
-            @else
-                <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg text-xs font-bold bg-gray-50 text-gray-400">
-                    <i class="fa-solid fa-box-open"></i> Kosong
-                </span>
-            @endif
         </div>
     </div>
     @empty
@@ -102,7 +86,6 @@
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     
                     <div class="lg:col-span-5 space-y-6">
-                        
                         <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
                             <div>
                                 <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Tanggal Penjualan</label>

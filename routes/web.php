@@ -8,6 +8,7 @@ use App\Http\Controllers\TransaksiSetorController;
 use App\Http\Controllers\TabunganController;
 use App\Http\Controllers\StokController;
 use App\Http\Controllers\TransaksiJualController;
+use App\Http\Controllers\KeuanganController;
 
 // Route Dashboard
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -34,3 +35,8 @@ Route::get('/stok', [StokController::class, 'index'])->name('stok.index');
 // Route Transaksi Jual
 Route::get('/jual', [TransaksiJualController::class, 'create'])->name('jual.create');
 Route::post('/jual', [TransaksiJualController::class, 'store'])->name('jual.store');
+
+// Route Keuangan
+Route::get('/keuangan', [KeuanganController::class, 'index'])->name('keuangan.index');
+Route::post('/keuangan/operasional', [KeuanganController::class, 'storeOperasional'])->name('keuangan.operasional');
+Route::get('/keuangan/pdf', [KeuanganController::class, 'exportPdf'])->name('keuangan.pdf');

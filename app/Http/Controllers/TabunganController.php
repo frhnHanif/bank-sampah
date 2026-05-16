@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Nasabah;
 use App\Models\MutasiTabungan;
+use App\Models\MutasiKas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -54,6 +55,15 @@ class TabunganController extends Controller
                 'jenis' => 'debit',
                 'jumlah' => $request->jumlah,
                 'keterangan' => $request->keterangan ?? 'Penarikan Saldo',
+            ]);
+
+            // Catat ke Buku Kas Induk sebagai Pengeluaran
+            MutasiKas::create([
+                'tanggal'    => $request->tanggal,
+                'tipe'       => 'pengeluaran',
+                'kategori'   => 'Tarik Tunai Nasabah',
+                'nominal'    => $request->jumlah,
+                'keterangan' => 'Penarikan tunai oleh nasabah: ' . $nasabah->nama,
             ]);
 
             DB::commit();

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Stok;
 use App\Models\TransaksiJual;
 use App\Models\ItemJual;
+use App\Models\MutasiKas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 
 class TransaksiJualController extends Controller
 {
@@ -69,6 +71,15 @@ class TransaksiJualController extends Controller
 
             // 4. Update Total Nilai Penjualan
             $transaksi->update(['total_nilai' => $total_nilai]);
+
+            // 5. Catat ke Buku Kas Induk sebagai Pemasukan
+            MutasiKas::create([
+                'tanggal'    => $request->tanggal,
+                'tipe'       => 'pemasukan',
+                'kategori'   => 'Penjualan',
+                'nominal'    => $total_nilai,
+                'keterangan' => 'Penjualan ke Pengepul: ' . $request->catatan,
+            ]);
 
             DB::commit();
             return redirect()->route('stok.index')->with('success', 'Transaksi penjualan ke pengepul berhasil! Stok gudang telah dikurangi.');
