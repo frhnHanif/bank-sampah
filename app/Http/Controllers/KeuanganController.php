@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\MutasiKas;
-use App\Models\TransaksiSetor;
+use App\Models\Tabungan;
+use App\Models\ItemSetor;
+use App\Models\ItemJual;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class KeuanganController extends Controller
@@ -18,15 +21,30 @@ class KeuanganController extends Controller
 
         // 2. Hitung Statistik untuk Analisis Keuntungan Bisnis
         $totalPenjualanPengepul = MutasiKas::where('kategori', 'Penjualan')->sum('nominal');
-        
-        // Total nilai sampah yang dibeli dari warga (Beban Pokok)
-        $totalBeliSampah = TransaksiSetor::sum('total_nilai');
+
+        // Total saldo aktif seluruh nasabah saat ini (kewajiban riil ke warga)
+        $totalRekeningWarga = Tabungan::sum('saldo_saat_ini');
+
+        // --- COGS: Harga Pokok barang yang SUDAH TERJUAL (bukan semua setoran) ---
+        // Rata-rata harga beli per kg untuk setiap kategori
+        $avgBeliPerKategori = ItemSetor::select('kategori_id',
+                DB::raw('SUM(nilai) / NULLIF(SUM(berat_kg), 0) as avg_harga_per_kg'))
+            ->groupBy('kategori_id')
+            ->pluck('avg_harga_per_kg', 'kategori_id');
+
+        // Hitung COGS = Σ (berat_terjual × rata2_harga_beli_kategori)
+        $cogsTerjual = 0;
+        $itemsTerjual = ItemJual::all();
+        foreach ($itemsTerjual as $item) {
+            $avgHarga = $avgBeliPerKategori[$item->kategori_id] ?? 0;
+            $cogsTerjual += $item->berat_kg * $avgHarga;
+        }
 
         // Total biaya operasional pengelola
         $totalOperasional = MutasiKas::where('kategori', 'Operasional')->sum('nominal');
 
-        // Rumus Laba Bersih = Uang dari Pengepul - Hak Uang Warga - Operasional
-        $estimasiKeuntungan = $totalPenjualanPengepul - $totalBeliSampah - $totalOperasional;
+        // Rumus Laba Bersih = Uang dari Pengepul - Beban Pokok Barang Terjual - Operasional
+        $estimasiKeuntungan = $totalPenjualanPengepul - $cogsTerjual - $totalOperasional;
 
         // 3. Ambil semua riwayat transaksi kas induk
         $mutasiKas = MutasiKas::orderBy('tanggal', 'desc')->orderBy('id', 'desc')->get();
@@ -34,7 +52,8 @@ class KeuanganController extends Controller
         return view('keuangan.index', compact(
             'saldoKas',
             'totalPenjualanPengepul',
-            'totalBeliSampah',
+            'totalRekeningWarga',
+            'cogsTerjual',
             'estimasiKeuntungan',
             'mutasiKas'
         ));

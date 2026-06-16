@@ -13,17 +13,21 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 class TabunganController extends Controller
 {
     // Menampilkan halaman buku tabungan nasabah
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $nasabah = Nasabah::with('tabungan')->findOrFail($id);
         
-        // Ambil riwayat mutasi, urutkan dari yang terbaru
-        $mutasi = MutasiTabungan::where('nasabah_id', $id)
-                    ->orderBy('tanggal', 'desc')
-                    ->orderBy('id', 'desc')
-                    ->get();
+        // Filter bulan (1-12), default 0 = semua
+        $bulan = $request->query('bulan', 0);
 
-        return view('tabungan.show', compact('nasabah', 'mutasi'));
+        // Ambil riwayat mutasi, urutkan dari yang terbaru
+        $query = MutasiTabungan::where('nasabah_id', $id);
+        if ($bulan > 0 && $bulan <= 12) {
+            $query->whereMonth('tanggal', $bulan);
+        }
+        $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->get();
+
+        return view('tabungan.show', compact('nasabah', 'mutasi', 'bulan'));
     }
 
     // Memproses penarikan saldo
@@ -76,22 +80,30 @@ class TabunganController extends Controller
     }
     
     // FUNGSI BARU UNTUK EXPORT PDF
-    public function exportPdf($id)
+    public function exportPdf(Request $request, $id)
     {
         $nasabah = Nasabah::with('tabungan')->findOrFail($id);
         
-        $mutasi = MutasiTabungan::where('nasabah_id', $id)
-                    ->orderBy('tanggal', 'asc') // Urutkan dari yang terlama untuk di buku cetak
-                    ->get();
+        // Filter bulan (1-12), default 0 = semua
+        $bulan = $request->query('bulan', 0);
+
+        $query = MutasiTabungan::where('nasabah_id', $id);
+        if ($bulan > 0 && $bulan <= 12) {
+            $query->whereMonth('tanggal', $bulan);
+        }
+        $mutasi = $query->orderBy('tanggal', 'asc')->get();
+
+        // Nama bulan untuk judul PDF
+        $namaBulan = [1 => 'Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        $labelBulan = ($bulan > 0) ? '_' . $namaBulan[$bulan] : '';
 
         // Load view HTML khusus PDF
-        $pdf = Pdf::loadView('tabungan.pdf', compact('nasabah', 'mutasi'));
+        $pdf = Pdf::loadView('tabungan.pdf', compact('nasabah', 'mutasi', 'bulan'));
         
         // Atur ukuran kertas ke A4 Portrait
         $pdf->setPaper('A4', 'portrait');
 
-        // Download otomatis dengan nama file dinamis
-        return $pdf->stream('Buku_Tabungan_' . str_replace(' ', '_', $nasabah->nama) . '.pdf');
+        return $pdf->stream('Buku_Tabungan_' . str_replace(' ', '_', $nasabah->nama) . $labelBulan . '.pdf');
     }
 
     public function generateIdCard($id)

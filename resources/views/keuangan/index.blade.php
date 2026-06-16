@@ -36,7 +36,7 @@
     <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-1 bg-red-400"></div>
         <p class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Total Rekening Warga</p>
-        <h2 class="text-2xl font-bold text-gray-700">Rp {{ number_format($totalBeliSampah, 0, ',', '.') }}</h2>
+        <h2 class="text-2xl font-bold text-gray-700">Rp {{ number_format($totalRekeningWarga, 0, ',', '.') }}</h2>
     </div>
 
     <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">

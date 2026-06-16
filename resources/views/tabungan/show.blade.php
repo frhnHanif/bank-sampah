@@ -30,16 +30,58 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <div class="lg:col-span-2 order-2 lg:order-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+        <div class="lg:col-span-2 order-2 lg:order-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-2xl">
                 <h3 class="font-bold text-gray-800"><i class="fa-solid fa-clock-rotate-left mr-2 text-gray-400"></i>Riwayat Transaksi</h3>
                 
-                <a href="{{ route('tabungan.pdf', $nasabah->id) }}" target="_blank" class="text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:text-emerald-600 hover:border-emerald-300 px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2 tooltip" title="Fitur Ekspor PDF">
-                    <i class="fa-solid fa-file-pdf text-red-500"></i> <span class="hidden sm:inline">Ekspor PDF</span>
-                </a>
+                <div class="flex items-center gap-3">
+                    <!-- Filter Bulan -->
+                    <div class="custom-select relative w-40">
+                        <select id="filterBulan" onchange="filterPerBulan()" class="sr-only">
+                            <option value="0" {{ $bulan == 0 ? 'selected' : '' }}>Semua Bulan</option>
+                            <option value="1" {{ $bulan == 1 ? 'selected' : '' }}>Januari</option>
+                            <option value="2" {{ $bulan == 2 ? 'selected' : '' }}>Februari</option>
+                            <option value="3" {{ $bulan == 3 ? 'selected' : '' }}>Maret</option>
+                            <option value="4" {{ $bulan == 4 ? 'selected' : '' }}>April</option>
+                            <option value="5" {{ $bulan == 5 ? 'selected' : '' }}>Mei</option>
+                            <option value="6" {{ $bulan == 6 ? 'selected' : '' }}>Juni</option>
+                            <option value="7" {{ $bulan == 7 ? 'selected' : '' }}>Juli</option>
+                            <option value="8" {{ $bulan == 8 ? 'selected' : '' }}>Agustus</option>
+                            <option value="9" {{ $bulan == 9 ? 'selected' : '' }}>September</option>
+                            <option value="10" {{ $bulan == 10 ? 'selected' : '' }}>Oktober</option>
+                            <option value="11" {{ $bulan == 11 ? 'selected' : '' }}>November</option>
+                            <option value="12" {{ $bulan == 12 ? 'selected' : '' }}>Desember</option>
+                        </select>
+
+                        <button type="button" class="custom-select-trigger w-full bg-white border border-emerald-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500 flex items-center justify-between gap-2 text-left text-xs">
+                            <span class="custom-select-label text-gray-600">Semua Bulan</span>
+                            <i class="fa-solid fa-chevron-down custom-select-chevron text-emerald-400 text-[10px] transition-transform duration-200"></i>
+                        </button>
+
+                        <div class="custom-select-dropdown bg-white border border-emerald-200 rounded-lg shadow-lg overflow-hidden z-50">
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="0">Semua Bulan</div>
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="1">Januari</div>
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="2">Februari</div>
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="3">Maret</div>
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="4">April</div>
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="5">Mei</div>
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="6">Juni</div>
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="7">Juli</div>
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="8">Agustus</div>
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="9">September</div>
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="10">Oktober</div>
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="11">November</div>
+                            <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50 hover:bg-emerald-50" data-value="12">Desember</div>
+                        </div>
+                    </div>
+
+                    <a href="{{ route('tabungan.pdf', ['id' => $nasabah->id, 'bulan' => $bulan]) }}" target="_blank" class="text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:text-emerald-600 hover:border-emerald-300 px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2 tooltip" title="Fitur Ekspor PDF">
+                        <i class="fa-solid fa-file-pdf text-red-500"></i> <span class="hidden sm:inline">Ekspor PDF</span>
+                    </a>
+                </div>
             </div>
             
-            <div class="overflow-x-auto flex-1">
+            <div class="overflow-x-auto flex-1 overflow-hidden rounded-b-2xl">
                 <table class="w-full text-left border-collapse">
                     <thead class="bg-white text-gray-400 text-xs uppercase tracking-wider border-b">
                         <tr>
@@ -175,7 +217,7 @@
             </button>
         </div>
 
-        <form action="{{ route('tabungan.tarik', $nasabah->id) }}" method="POST">
+        <form id="formTarikTunai" action="{{ route('tabungan.tarik', $nasabah->id) }}" method="POST">
             @csrf
             <div class="p-6 space-y-4">
                 
@@ -204,7 +246,7 @@
                 <button type="button" onclick="tutupModalTarik()" class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 py-2.5 rounded-xl font-bold transition-colors">
                     Batal
                 </button>
-                <button type="submit" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold transition-colors shadow-sm" onclick="return confirm('Proses penarikan dana ini?')">
+                <button type="button" onclick="prosesTarik()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold transition-colors shadow-sm">
                     Proses Tarik
                 </button>
             </div>
@@ -256,6 +298,22 @@
             modalTarik.classList.add('hidden');
             modalTarik.classList.remove('flex');
         }, 300);
+    }
+
+    async function prosesTarik() {
+        const confirmed = await showConfirm(
+            'Proses penarikan dana ini? Saldo nasabah akan berkurang dan tercatat di kas induk.',
+            'Konfirmasi Tarik Tunai',
+            'emerald'
+        );
+        if (confirmed) {
+            document.getElementById('formTarikTunai').submit();
+        }
+    }
+
+    function filterPerBulan() {
+        const bulan = document.getElementById('filterBulan').value;
+        window.location.href = '{{ route("tabungan.show", $nasabah->id) }}?bulan=' + bulan;
     }
 </script>
 @endpush

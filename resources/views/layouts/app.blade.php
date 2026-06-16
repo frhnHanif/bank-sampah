@@ -53,7 +53,7 @@
         .custom-select.open .custom-select-chevron { transform: rotate(180deg); }
         .custom-select-option { cursor: pointer; transition: background 0.15s; }
         .custom-select-option:hover { background: #f3f4f6; }
-        .custom-select-option.selected { background: #fef3c7; font-weight: 600; color: #92400e; }
+        .custom-select-option.selected { background: #ecfdf5; font-weight: 600; color: #047857; }
     </style>
 </head>
 <body class="text-gray-800 antialiased font-sans relative">
@@ -159,7 +159,7 @@
     <div id="confirmModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[200] hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
         <div id="confirmModalBox" class="bg-white rounded-2xl w-full max-w-md mx-auto overflow-hidden transform scale-95 transition-transform duration-300 shadow-xl">
             <div class="p-6 text-center">
-                <div class="w-14 h-14 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <div id="confirmIcon" class="w-14 h-14 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
                     <i class="fa-solid fa-circle-question"></i>
                 </div>
                 <h3 id="confirmTitle" class="text-lg font-bold text-gray-800 mb-2">Konfirmasi</h3>
@@ -220,7 +220,7 @@
     }
 
     // ==================== CONFIRM MODAL SYSTEM ====================
-    function showConfirm(message = 'Apakah Anda yakin?', title = 'Konfirmasi') {
+    function showConfirm(message = 'Apakah Anda yakin?', title = 'Konfirmasi', theme = 'amber') {
         return new Promise((resolve) => {
             const modal = document.getElementById('confirmModal');
             const box = document.getElementById('confirmModalBox');
@@ -228,9 +228,27 @@
             const msgEl = document.getElementById('confirmMessage');
             const okBtn = document.getElementById('confirmOkBtn');
             const cancelBtn = document.getElementById('confirmCancelBtn');
+            const iconEl = document.getElementById('confirmIcon');
 
             titleEl.textContent = title;
             msgEl.textContent = message;
+
+            // Color themes
+            const themes = {
+                amber:   { iconBg: 'bg-amber-100', iconText: 'text-amber-500', btnBg: 'bg-amber-500', btnHover: 'hover:bg-amber-600' },
+                emerald: { iconBg: 'bg-emerald-100', iconText: 'text-emerald-500', btnBg: 'bg-emerald-500', btnHover: 'hover:bg-emerald-600' },
+                red:     { iconBg: 'bg-red-100', iconText: 'text-red-500', btnBg: 'bg-red-500', btnHover: 'hover:bg-red-600' },
+                blue:    { iconBg: 'bg-blue-100', iconText: 'text-blue-500', btnBg: 'bg-blue-500', btnHover: 'hover:bg-blue-600' },
+            };
+            const t = themes[theme] || themes.amber;
+
+            // Reset & apply icon colors
+            iconEl.classList.remove('bg-amber-100', 'text-amber-500', 'bg-emerald-100', 'text-emerald-500', 'bg-red-100', 'text-red-500', 'bg-blue-100', 'text-blue-500');
+            iconEl.classList.add(t.iconBg, t.iconText);
+
+            // Reset & apply OK button colors
+            okBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600', 'bg-emerald-500', 'hover:bg-emerald-600', 'bg-red-500', 'hover:bg-red-600', 'bg-blue-500', 'hover:bg-blue-600');
+            okBtn.classList.add(t.btnBg, t.btnHover);
 
             function cleanup() {
                 modal.classList.add('opacity-0');
