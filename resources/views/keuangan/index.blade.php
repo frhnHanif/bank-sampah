@@ -52,9 +52,51 @@
     <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex justify-between items-center">
         <h3 class="font-bold text-gray-800"><i class="fa-solid fa-list-check mr-2 text-gray-400"></i>Jurnal Mutasi Kas Induk</h3>
         
-        <a href="{{ route('keuangan.pdf') }}" target="_blank" class="text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:text-emerald-600 hover:border-emerald-300 px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2 tooltip" title="Ekspor PDF Keuangan">
-            <i class="fa-solid fa-file-pdf text-red-500"></i> <span class="hidden sm:inline">Ekspor PDF</span>
-        </a>
+        <div class="flex items-center gap-3">
+            <!-- Filter Bulan -->
+            <div class="custom-select relative w-40">
+                <select id="filterBulan" onchange="filterPerBulan()" class="sr-only">
+                    <option value="0" {{ $bulan == 0 ? 'selected' : '' }}>Semua Bulan</option>
+                    <option value="1" {{ $bulan == 1 ? 'selected' : '' }}>Januari</option>
+                    <option value="2" {{ $bulan == 2 ? 'selected' : '' }}>Februari</option>
+                    <option value="3" {{ $bulan == 3 ? 'selected' : '' }}>Maret</option>
+                    <option value="4" {{ $bulan == 4 ? 'selected' : '' }}>April</option>
+                    <option value="5" {{ $bulan == 5 ? 'selected' : '' }}>Mei</option>
+                    <option value="6" {{ $bulan == 6 ? 'selected' : '' }}>Juni</option>
+                    <option value="7" {{ $bulan == 7 ? 'selected' : '' }}>Juli</option>
+                    <option value="8" {{ $bulan == 8 ? 'selected' : '' }}>Agustus</option>
+                    <option value="9" {{ $bulan == 9 ? 'selected' : '' }}>September</option>
+                    <option value="10" {{ $bulan == 10 ? 'selected' : '' }}>Oktober</option>
+                    <option value="11" {{ $bulan == 11 ? 'selected' : '' }}>November</option>
+                    <option value="12" {{ $bulan == 12 ? 'selected' : '' }}>Desember</option>
+                </select>
+
+                <button type="button" class="custom-select-trigger w-full bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-amber-500 flex items-center justify-between gap-2 text-left text-xs">
+                    <span class="custom-select-label text-gray-600">Semua Bulan</span>
+                    <i class="fa-solid fa-chevron-down custom-select-chevron text-amber-400 text-[10px] transition-transform duration-200"></i>
+                </button>
+
+                <div class="custom-select-dropdown bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="0">Semua Bulan</div>
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="1">Januari</div>
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="2">Februari</div>
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="3">Maret</div>
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="4">April</div>
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="5">Mei</div>
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="6">Juni</div>
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="7">Juli</div>
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="8">Agustus</div>
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="9">September</div>
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="10">Oktober</div>
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="11">November</div>
+                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="12">Desember</div>
+                </div>
+            </div>
+
+            <a href="{{ route('keuangan.pdf', ['bulan' => $bulan]) }}" target="_blank" class="text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:text-emerald-600 hover:border-emerald-300 px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2 tooltip" title="Ekspor PDF Keuangan">
+                <i class="fa-solid fa-file-pdf text-red-500"></i> <span class="hidden sm:inline">Ekspor PDF</span>
+            </a>
+        </div>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
@@ -162,6 +204,11 @@
             modalOp.classList.add('hidden');
             modalOp.classList.remove('flex');
         }, 300);
+    }
+
+    function filterPerBulan() {
+        const bulan = document.getElementById('filterBulan').value;
+        window.location.href = '{{ route("keuangan.index") }}?bulan=' + bulan;
     }
 </script>
 @endpush
