@@ -103,16 +103,38 @@
                             
                             <div>
                                 <label class="block text-xs font-bold text-amber-700 mb-2">Pilih Sampah Gudang</label>
-                                <select id="kategoriInput" onchange="setMaksimalStok()" class="w-full bg-white border border-amber-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-amber-500">
-                                    <option value="" disabled selected>-- Pilih Barang --</option>
-                                    @foreach($stok as $s)
-                                        @if($s->kategori && $s->total_berat_kg > 0) 
-                                            <option value="{{ $s->kategori->id }}" data-stok="{{ $s->total_berat_kg }}">
-                                                {{ $s->kategori->nama }} (Sisa: {{ $s->total_berat_kg }} kg)
-                                            </option>
-                                        @endif
-                                    @endforeach
-                                </select>
+
+                                <!-- Custom Select -->
+                                <div class="custom-select relative">
+                                    <select id="kategoriInput" onchange="setMaksimalStok()" class="sr-only">
+                                        <option value="" disabled selected>-- Pilih Barang --</option>
+                                        @foreach($stok as $s)
+                                            @if($s->kategori && $s->total_berat_kg > 0) 
+                                                <option value="{{ $s->kategori->id }}" data-stok="{{ $s->total_berat_kg }}">
+                                                    {{ $s->kategori->nama }} (Sisa: {{ number_format($s->total_berat_kg, 2, ',', '.') }} kg)
+                                                </option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+
+                                    <button type="button" class="custom-select-trigger w-full bg-white border border-amber-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-amber-500 flex items-center justify-between gap-2 text-left">
+                                        <span class="custom-select-label text-gray-400 text-sm">-- Pilih Barang --</span>
+                                        <i class="fa-solid fa-chevron-down custom-select-chevron text-amber-400 text-xs transition-transform duration-200"></i>
+                                    </button>
+
+                                    <div class="custom-select-dropdown bg-white border border-amber-200 rounded-xl shadow-lg overflow-hidden">
+                                        @foreach($stok as $s)
+                                            @if($s->kategori && $s->total_berat_kg > 0)
+                                                <div class="custom-select-option px-4 py-2.5 text-sm text-gray-700 border-b border-gray-50 last:border-b-0"
+                                                     data-value="{{ $s->kategori->id }}">
+                                                    <span class="font-medium">{{ $s->kategori->nama }}</span>
+                                                    <span class="text-gray-400 ml-1">(Sisa: {{ number_format($s->total_berat_kg, 2, ',', '.') }} kg)</span>
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                </div>
+
                                 <p id="infoStok" class="text-[10px] text-amber-600 mt-1 font-medium hidden">Maksimal bisa dijual: <span id="maxStokTxt">0</span> kg</p>
                             </div>
 
@@ -233,12 +255,12 @@
         const harga_jual = parseFloat(inputHarga.value);
 
         if (!kategori_id || isNaN(berat) || berat <= 0 || isNaN(harga_jual) || harga_jual <= 0) {
-            alert('Lengkapi barang, berat, dan harga jual dengan benar!');
+            showToast('Lengkapi barang, berat, dan harga jual dengan benar!', 'warning');
             return;
         }
 
         if (berat > stokMaksimal) {
-            alert(`Berat melebihi stok gudang! Maksimal: ${stokMaksimal} kg`);
+            showToast(`Berat melebihi stok gudang! Maksimal: ${stokMaksimal} kg`, 'error');
             return;
         }
 
@@ -250,7 +272,7 @@
         if (existingIndex > -1) {
             // Cek apakah gabungan berat barunya melebihi stok
             if ((cart[existingIndex].berat + berat) > stokMaksimal) {
-                alert(`Total berat item ini di keranjang melebihi stok gudang (${stokMaksimal} kg)!`);
+                showToast(`Total berat item ini di keranjang melebihi stok gudang (${stokMaksimal} kg)!`, 'error');
                 return;
             }
             cart[existingIndex].berat += berat;
@@ -271,6 +293,7 @@
         document.getElementById('infoStok').classList.add('hidden');
         stokMaksimal = 0;
 
+        showToast(`${nama} berhasil ditambahkan ke muatan!`, 'success');
         renderCart();
     }
 
@@ -314,13 +337,18 @@
         document.getElementById('cartDataInput').value = JSON.stringify(cart);
     }
 
-    function submitPenjualan() {
+    async function submitPenjualan() {
         if (cart.length === 0) {
-            alert('Muatan kosong! Tambahkan barang dari gudang terlebih dahulu.');
+            showToast('Muatan kosong! Tambahkan barang dari gudang terlebih dahulu.', 'warning');
             return;
         }
-        
-        if(confirm('Proses penjualan ini? Stok gudang akan otomatis berkurang.')) {
+
+        const confirmed = await showConfirm(
+            'Proses penjualan ini? Stok gudang akan otomatis berkurang.',
+            'Konfirmasi Penjualan'
+        );
+
+        if (confirmed) {
             document.getElementById('formPenjualan').submit();
         }
     }

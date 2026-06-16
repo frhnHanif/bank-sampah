@@ -38,6 +38,22 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* === Custom Select === */
+        .custom-select-trigger { cursor: pointer; user-select: none; }
+        .custom-select-dropdown { 
+            position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 60;
+            max-height: 220px; overflow-y: auto;
+            opacity: 0; visibility: hidden; transform: translateY(-8px);
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+        .custom-select.open .custom-select-dropdown {
+            opacity: 1; visibility: visible; transform: translateY(0);
+        }
+        .custom-select.open .custom-select-chevron { transform: rotate(180deg); }
+        .custom-select-option { cursor: pointer; transition: background 0.15s; }
+        .custom-select-option:hover { background: #f3f4f6; }
+        .custom-select-option.selected { background: #fef3c7; font-weight: 600; color: #92400e; }
     </style>
 </head>
 <body class="text-gray-800 antialiased font-sans relative">
@@ -121,6 +137,31 @@
     </main>
 
     @stack('scripts')    
+
+    <!-- ===== TOAST NOTIFICATION ===== -->
+    <div id="toastContainer" class="fixed top-6 right-6 z-[200] flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- ===== CONFIRM MODAL ===== -->
+    <div id="confirmModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[200] hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
+        <div id="confirmModalBox" class="bg-white rounded-2xl w-full max-w-md mx-auto overflow-hidden transform scale-95 transition-transform duration-300 shadow-xl">
+            <div class="p-6 text-center">
+                <div class="w-14 h-14 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fa-solid fa-circle-question"></i>
+                </div>
+                <h3 id="confirmTitle" class="text-lg font-bold text-gray-800 mb-2">Konfirmasi</h3>
+                <p id="confirmMessage" class="text-gray-600 text-sm mb-6">Apakah Anda yakin?</p>
+                <div class="flex gap-3 justify-center">
+                    <button type="button" id="confirmCancelBtn" class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition text-sm">
+                        Batal
+                    </button>
+                    <button type="button" id="confirmOkBtn" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition text-sm">
+                        Ya, Lanjutkan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -132,6 +173,178 @@
                     console.log('Pendaftaran ServiceWorker gagal: ', err);
                 });
         });
+    }
+
+    // ==================== TOAST SYSTEM ====================
+    function showToast(message, type = 'error') {
+        const container = document.getElementById('toastContainer');
+
+        const config = {
+            error:   { bg: 'bg-red-500',   icon: 'fa-circle-xmark' },
+            success: { bg: 'bg-emerald-500', icon: 'fa-circle-check' },
+            warning: { bg: 'bg-amber-500',  icon: 'fa-triangle-exclamation' },
+            info:    { bg: 'bg-blue-500',   icon: 'fa-circle-info' },
+        };
+        const { bg, icon } = config[type] || config.error;
+
+        const toast = document.createElement('div');
+        toast.className = `${bg} text-white px-5 py-3 rounded-2xl shadow-lg flex items-center gap-3 pointer-events-auto transform translate-x-full opacity-0 transition-all duration-300 max-w-sm`;
+        toast.innerHTML = `
+            <i class="fa-solid ${icon} shrink-0"></i>
+            <span class="text-sm font-medium">${message}</span>
+        `;
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-x-full', 'opacity-0');
+        });
+
+        setTimeout(() => {
+            toast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    // ==================== CONFIRM MODAL SYSTEM ====================
+    function showConfirm(message = 'Apakah Anda yakin?', title = 'Konfirmasi') {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('confirmModal');
+            const box = document.getElementById('confirmModalBox');
+            const titleEl = document.getElementById('confirmTitle');
+            const msgEl = document.getElementById('confirmMessage');
+            const okBtn = document.getElementById('confirmOkBtn');
+            const cancelBtn = document.getElementById('confirmCancelBtn');
+
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+
+            function cleanup() {
+                modal.classList.add('opacity-0');
+                box.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }, 300);
+                okBtn.removeEventListener('click', onOk);
+                cancelBtn.removeEventListener('click', onCancel);
+            }
+
+            function onOk() {
+                cleanup();
+                resolve(true);
+            }
+
+            function onCancel() {
+                cleanup();
+                resolve(false);
+            }
+
+            okBtn.addEventListener('click', onOk);
+            cancelBtn.addEventListener('click', onCancel);
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                box.classList.remove('scale-95');
+            });
+        });
+    }
+
+    // ==================== CUSTOM SELECT SYSTEM ====================
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.custom-select').forEach(wrapper => {
+            const nativeSelect = wrapper.querySelector('select');
+            const trigger = wrapper.querySelector('.custom-select-trigger');
+            const label = wrapper.querySelector('.custom-select-label');
+            const dropdown = wrapper.querySelector('.custom-select-dropdown');
+            const options = dropdown.querySelectorAll('.custom-select-option');
+
+            function findOptionByValue(value) {
+                return Array.from(options).find(o => o.dataset.value === value);
+            }
+
+            function findOptionIndexByValue(value) {
+                return Array.from(options).findIndex(o => o.dataset.value === value);
+            }
+
+            function updateLabel() {
+                const selectedOption = findOptionByValue(nativeSelect.value);
+                if (selectedOption) {
+                    label.textContent = selectedOption.textContent.trim();
+                    options.forEach(o => o.classList.remove('selected'));
+                    selectedOption.classList.add('selected');
+                } else {
+                    // Kembalikan ke placeholder
+                    label.textContent = '-- Pilih Barang --';
+                    label.classList.add('text-gray-400');
+                    options.forEach(o => o.classList.remove('selected'));
+                }
+            }
+
+            function open() {
+                closeAllSelects();
+                wrapper.classList.add('open');
+                const selOpt = findOptionByValue(nativeSelect.value);
+                if (selOpt) selOpt.scrollIntoView({ block: 'nearest' });
+            }
+
+            function close() {
+                wrapper.classList.remove('open');
+            }
+
+            function selectOption(optionEl) {
+                const value = optionEl.dataset.value;
+                nativeSelect.value = value;
+                label.classList.remove('text-gray-400');
+                updateLabel();
+                close();
+                nativeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                wrapper.classList.contains('open') ? close() : open();
+            });
+
+            options.forEach(opt => {
+                opt.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectOption(opt);
+                });
+            });
+
+            // Keyboard navigation
+            trigger.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    wrapper.classList.contains('open') ? close() : open();
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (!wrapper.classList.contains('open')) open();
+                    const curIdx = findOptionIndexByValue(nativeSelect.value);
+                    const nextIdx = Math.min(curIdx + 1, options.length - 1);
+                    if (nextIdx >= 0) selectOption(options[nextIdx]);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!wrapper.classList.contains('open')) open();
+                    const curIdx = findOptionIndexByValue(nativeSelect.value);
+                    const prevIdx = Math.max(curIdx - 1, 0);
+                    if (prevIdx >= 0) selectOption(options[prevIdx]);
+                } else if (e.key === 'Escape') {
+                    close();
+                }
+            });
+
+            updateLabel();
+        });
+
+        // Close all on outside click
+        document.addEventListener('click', () => closeAllSelects());
+    });
+
+    function closeAllSelects() {
+        document.querySelectorAll('.custom-select.open').forEach(el => el.classList.remove('open'));
     }
 </script>
 </body>
