@@ -13,4 +13,9 @@ class MutasiTabungan extends Model
     {
         return $this->belongsTo(Nasabah::class);
     }
+
+    public function transaksiSetor()
+    {
+        return $this->belongsTo(TransaksiSetor::class, 'ref_transaksi_setor_id');
+    }
 }

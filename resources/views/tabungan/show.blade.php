@@ -81,37 +81,58 @@
                 </div>
             </div>
             
-            <div class="overflow-x-auto flex-1 overflow-hidden rounded-b-2xl">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-white text-gray-400 text-xs uppercase tracking-wider border-b">
-                        <tr>
-                            <th class="p-4 font-black">Tanggal</th>
-                            <th class="p-4 font-black">Keterangan</th>
-                            <th class="p-4 font-black text-right">Masuk (Cr)</th>
-                            <th class="p-4 font-black text-right">Keluar (Db)</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-50">
-                        @forelse($mutasi as $m)
-                        <tr class="hover:bg-gray-50/50 transition-colors">
-                            <td class="p-4 text-sm text-gray-600 font-medium">{{ \Carbon\Carbon::parse($m->tanggal)->format('d/m/Y') }}</td>
-                            <td class="p-4 text-sm text-gray-600">
-                                {{ $m->keterangan }}
-                                </td>
-                            <td class="p-4 text-sm font-bold text-right text-emerald-600">
-                                {{ $m->jenis == 'kredit' ? '+ Rp ' . number_format($m->jumlah, 0, ',', '.') : '-' }}
-                            </td>
-                            <td class="p-4 text-sm font-bold text-right text-red-500">
-                                {{ $m->jenis == 'debit' ? '- Rp ' . number_format($m->jumlah, 0, ',', '.') : '-' }}
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" class="p-8 text-center text-gray-400 italic">Belum ada riwayat transaksi.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <div class="flex-1 overflow-y-auto overflow-x-hidden rounded-b-2xl divide-y divide-gray-100">
+                @forelse($mutasi as $m)
+                @php
+                    $tgl = \Carbon\Carbon::parse($m->tanggal);
+                    $bulanSingkat = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+                    $tglFormat = $tgl->day . ' ' . $bulanSingkat[$tgl->month - 1] . ' ' . $tgl->year;
+                    $isKredit = $m->jenis == 'kredit';
+                    $items = $isKredit && $m->transaksiSetor ? $m->transaksiSetor->items : null;
+                @endphp
+                <div class="p-4 hover:bg-gray-50/30 transition-colors">
+                    <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-5">
+                        {{-- Kolom Tanggal --}}
+                        <div class="sm:w-28 shrink-0">
+                            <span class="inline-block bg-gray-100 text-gray-700 text-xs font-bold px-2.5 py-1 rounded-md">{{ $tglFormat }}</span>
+                        </div>
+
+                        {{-- Kolom Detail --}}
+                        <div class="flex-1 min-w-0">
+                            {{-- Badge jenis transaksi --}}
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $isKredit ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }}">
+                                    <i class="fa-solid {{ $isKredit ? 'fa-arrow-down text-emerald-500' : 'fa-arrow-up text-red-500' }} text-[9px]"></i>
+                                    {{ $isKredit ? 'Setor' : 'Tarik' }}
+                                </span>
+                                <span class="text-sm font-bold {{ $isKredit ? 'text-emerald-600' : 'text-red-500' }}">
+                                    {{ $isKredit ? '+' : '-' }} Rp {{ number_format($m->jumlah, 0, ',', '.') }}
+                                </span>
+                            </div>
+
+                            {{-- Rincian item (hanya untuk setor) --}}
+                            @if($isKredit && $items && $items->count())
+                            <div class="space-y-1 mt-2">
+                                @foreach($items as $item)
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-1.5">
+                                    <span class="font-medium text-gray-700 truncate max-w-[180px]">{{ $item->kategori ? $item->kategori->nama : '—' }}</span>
+                                    <span class="whitespace-nowrap">{{ number_format($item->berat_kg, 2, ',', '.') }} kg</span>
+                                    <span class="whitespace-nowrap ml-auto font-semibold text-gray-600">Rp {{ number_format($item->nilai, 0, ',', '.') }}</span>
+                                </div>
+                                @endforeach
+                            </div>
+                            @endif
+
+                            {{-- Keterangan --}}
+                            @if($m->keterangan)
+                            <p class="text-xs text-gray-400 mt-1.5 italic">{{ $m->keterangan }}</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="p-8 text-center text-gray-400 italic">Belum ada riwayat transaksi.</div>
+                @endforelse
             </div>
         </div>
 

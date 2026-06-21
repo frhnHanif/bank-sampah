@@ -76,6 +76,9 @@
         }
         .saldo-box h3 { margin: 0 0 5px 0; font-size: 12px; color: #065f46; }
         .saldo-box p { margin: 0; font-size: 20px; font-weight: bold; color: #065f46; }
+
+        .item-list { margin: 4px 0 0; padding: 0; list-style: none; }
+        .item-list li { padding: 1px 0; }
     </style>
 </head>
 <body>
@@ -134,12 +137,28 @@
         </thead>
         <tbody>
             @forelse($mutasi as $index => $m)
+            @php
+                $tgl = \Carbon\Carbon::parse($m->tanggal);
+                $bulanSingkat = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+                $tglFormat = $tgl->day . ' ' . $bulanSingkat[$tgl->month - 1] . ' ' . $tgl->year;
+                $isKredit = $m->jenis == 'kredit';
+                $items = $isKredit && $m->transaksiSetor ? $m->transaksiSetor->items : null;
+            @endphp
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
-                <td>{{ \Carbon\Carbon::parse($m->tanggal)->format('d/m/Y') }}</td>
-                <td>{{ $m->keterangan }}</td>
-                <td class="text-right cr">{{ $m->jenis == 'kredit' ? 'Rp ' . number_format($m->jumlah, 0, ',', '.') : '-' }}</td>
-                <td class="text-right db">{{ $m->jenis == 'debit' ? 'Rp ' . number_format($m->jumlah, 0, ',', '.') : '-' }}</td>
+                <td>{{ $tglFormat }}</td>
+                <td>
+                    {{ $m->keterangan }}
+                    @if($isKredit && $items && $items->count())
+                    <ul class="item-list">
+                        @foreach($items as $item)
+                        <li>{{ $item->kategori ? $item->kategori->nama : '—' }} — {{ number_format($item->berat_kg, 2, ',', '.') }} kg &times; Rp {{ number_format($item->nilai, 0, ',', '.') }}</li>
+                        @endforeach
+                    </ul>
+                    @endif
+                </td>
+                <td class="text-right cr">{{ $isKredit ? 'Rp ' . number_format($m->jumlah, 0, ',', '.') : '-' }}</td>
+                <td class="text-right db">{{ !$isKredit ? 'Rp ' . number_format($m->jumlah, 0, ',', '.') : '-' }}</td>
             </tr>
             @empty
             <tr>

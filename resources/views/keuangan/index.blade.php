@@ -98,7 +98,52 @@
             </a>
         </div>
     </div>
-    <div class="overflow-x-auto">
+
+    {{-- Mobile: Card Layout --}}
+    <div class="lg:hidden divide-y divide-gray-100">
+        @forelse($mutasiKas as $m)
+        @php
+            $tgl = \Carbon\Carbon::parse($m->tanggal);
+            $bulanSingkat = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+            $tglFormat = $tgl->day . ' ' . $bulanSingkat[$tgl->month - 1] . ' ' . $tgl->year;
+            $isPemasukan = $m->tipe == 'pemasukan';
+            $katColor = match($m->kategori) {
+                'Penjualan' => 'bg-amber-100 text-amber-700',
+                'Tarik Tunai Nasabah' => 'bg-blue-100 text-blue-700',
+                'Operasional' => 'bg-red-100 text-red-700',
+                default => 'bg-gray-100 text-gray-600',
+            };
+            $katIcon = match($m->kategori) {
+                'Penjualan' => 'fa-store',
+                'Tarik Tunai Nasabah' => 'fa-hand-holding-dollar',
+                'Operasional' => 'fa-screwdriver-wrench',
+                default => 'fa-file-invoice',
+            };
+        @endphp
+        <div class="p-4 hover:bg-gray-50/30 transition-colors">
+            {{-- Baris atas: tanggal kiri, nominal kanan --}}
+            <div class="flex items-center justify-between gap-3 mb-2">
+                <span class="inline-block bg-gray-100 text-gray-700 text-xs font-bold px-2.5 py-1 rounded-md shrink-0">{{ $tglFormat }}</span>
+                <span class="text-sm font-bold text-right {{ $isPemasukan ? 'text-emerald-600' : 'text-red-500' }}">
+                    {{ $isPemasukan ? '+' : '−' }} Rp {{ number_format($m->nominal, 0, ',', '.') }}
+                </span>
+            </div>
+            {{-- Baris bawah: badge kategori + keterangan --}}
+            <div>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $katColor }} mb-1.5">
+                    <i class="fa-solid {{ $katIcon }} text-[9px]"></i>
+                    {{ $m->kategori }}
+                </span>
+                <p class="text-sm text-gray-600">{{ $m->keterangan }}</p>
+            </div>
+        </div>
+        @empty
+        <div class="p-8 text-center text-gray-400 italic">Belum ada riwayat keuangan kas induk.</div>
+        @endforelse
+    </div>
+
+    {{-- Desktop: Table Layout --}}
+    <div class="hidden lg:block overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-white text-gray-400 text-xs uppercase tracking-wider border-b">
@@ -137,6 +182,7 @@
             </tbody>
         </table>
     </div>
+
 </div>
 
 <div id="modalOperasional" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">

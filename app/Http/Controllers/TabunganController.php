@@ -21,7 +21,8 @@ class TabunganController extends Controller
         $bulan = $request->query('bulan', 0);
 
         // Ambil riwayat mutasi, urutkan dari yang terbaru
-        $query = MutasiTabungan::where('nasabah_id', $id);
+        $query = MutasiTabungan::with('transaksiSetor.items.kategori')
+            ->where('nasabah_id', $id);
         if ($bulan > 0 && $bulan <= 12) {
             $query->whereMonth('tanggal', $bulan);
         }
@@ -87,7 +88,8 @@ class TabunganController extends Controller
         // Filter bulan (1-12), default 0 = semua
         $bulan = $request->query('bulan', 0);
 
-        $query = MutasiTabungan::where('nasabah_id', $id);
+        $query = MutasiTabungan::with('transaksiSetor.items.kategori')
+            ->where('nasabah_id', $id);
         if ($bulan > 0 && $bulan <= 12) {
             $query->whereMonth('tanggal', $bulan);
         }
