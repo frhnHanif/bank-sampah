@@ -14,8 +14,9 @@ class KeuanganController extends Controller
 {
     public function index(Request $request)
     {
-        // Filter bulan (1-12), default 0 = semua
-        $bulan = $request->query('bulan', 0);
+        // Filter bulan (0=semua, 1-12) & tahun (0=semua)
+        $bulan = (int) $request->query('bulan', 0);
+        $tahun = (int) $request->query('tahun', 0);
 
         // 1. Hitung Saldo Kas Riil (Pemasukan - Pengeluaran)
         $totalPemasukan = MutasiKas::where('tipe', 'pemasukan')->sum('nominal');
@@ -49,12 +50,19 @@ class KeuanganController extends Controller
         // Rumus Laba Bersih = Uang dari Pengepul - Beban Pokok Barang Terjual - Operasional
         $estimasiKeuntungan = $totalPenjualanPengepul - $cogsTerjual - $totalOperasional;
 
-        // 3. Ambil semua riwayat transaksi kas induk (dengan filter bulan)
+        // 3. Ambil semua riwayat transaksi kas induk (dengan filter bulan & tahun)
         $queryMutasi = MutasiKas::orderBy('tanggal', 'desc')->orderBy('id', 'desc');
         if ($bulan > 0 && $bulan <= 12) {
             $queryMutasi->whereMonth('tanggal', $bulan);
         }
+        if ($tahun > 0) {
+            $queryMutasi->whereYear('tanggal', $tahun);
+        }
         $mutasiKas = $queryMutasi->get();
+
+        // Ambil daftar tahun yang tersedia
+        $tahunTersedia = MutasiKas::selectRaw('YEAR(tanggal) as tahun')
+            ->distinct()->orderBy('tahun', 'desc')->pluck('tahun');
 
         return view('keuangan.index', compact(
             'saldoKas',
@@ -63,7 +71,9 @@ class KeuanganController extends Controller
             'cogsTerjual',
             'estimasiKeuntungan',
             'mutasiKas',
-            'bulan'
+            'bulan',
+            'tahun',
+            'tahunTersedia'
         ));
     }
 
@@ -91,13 +101,15 @@ class KeuanganController extends Controller
     // Export laporan keuangan ke PDF
     public function exportPdf(Request $request)
     {
-        // Filter bulan (1-12), default 0 = semua
-        $bulan = $request->query('bulan', 0);
+        $bulan = (int) $request->query('bulan', 0);
+        $tahun = (int) $request->query('tahun', 0);
 
-        // Ambil data dari awal sampai akhir (Ascending untuk cetakan buku)
         $queryMutasi = MutasiKas::orderBy('tanggal', 'asc')->orderBy('id', 'asc');
         if ($bulan > 0 && $bulan <= 12) {
             $queryMutasi->whereMonth('tanggal', $bulan);
+        }
+        if ($tahun > 0) {
+            $queryMutasi->whereYear('tanggal', $tahun);
         }
         $mutasiKas = $queryMutasi->get();
 
@@ -105,13 +117,13 @@ class KeuanganController extends Controller
         $totalPengeluaran = MutasiKas::where('tipe', 'pengeluaran')->sum('nominal');
         $saldoKas = $totalPemasukan - $totalPengeluaran;
 
-        // Nama bulan untuk judul PDF
         $namaBulan = [1 => 'Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
         $labelBulan = ($bulan > 0) ? '_' . $namaBulan[$bulan] : '';
+        $labelTahun = ($tahun > 0) ? '_' . $tahun : '';
 
         $pdf = Pdf::loadView('keuangan.pdf', compact('mutasiKas', 'saldoKas', 'totalPemasukan', 'totalPengeluaran', 'bulan'));
         $pdf->setPaper('A4', 'portrait');
 
-        return $pdf->stream('Laporan_Kas_Induk_' . date('Y-m-d') . $labelBulan . '.pdf');
+        return $pdf->stream('Laporan_Kas_Induk_' . date('Y-m-d') . $labelBulan . $labelTahun . '.pdf');
     }
 }

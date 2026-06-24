@@ -107,18 +107,6 @@ class TransaksiSetorController extends Controller
             ]);
             // ==========================================
 
-            // Catat riwayat uang masuk (Kredit)
-            MutasiTabungan::create([
-                'nasabah_id' => $request->nasabah_id,
-                'tanggal'    => $request->tanggal,
-                'jenis'      => 'kredit',
-                'jumlah'     => $total_nilai,
-                'keterangan' => 'Penyetoran sampah (' . count($cart) . ' item)',
-                'ref_transaksi_setor_id' => $transaksi->id,
-            ]);
-
-            // ==========================================
-
             // === LOGIKA WHATSAPP NOTA ===
             $nasabah = Nasabah::find($request->nasabah_id);
             $no_hp = $nasabah->no_hp ?? ''; 

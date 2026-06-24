@@ -48,52 +48,23 @@
 
 </div>
 
-<div class="bg-white shadow-sm border border-gray-100 rounded-2xl overflow-hidden">
-    <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex justify-between items-center">
+<div class="bg-white shadow-sm border border-gray-100 rounded-2xl">
+    <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex justify-between items-center rounded-t-2xl">
         <h3 class="font-bold text-gray-800"><i class="fa-solid fa-list-check mr-2 text-gray-400"></i>Jurnal Mutasi Kas Induk</h3>
         
         <div class="flex items-center gap-3">
-            <!-- Filter Bulan -->
-            <div class="custom-select relative w-40">
-                <select id="filterBulan" onchange="filterPerBulan()" class="sr-only">
-                    <option value="0" {{ $bulan == 0 ? 'selected' : '' }}>Semua Bulan</option>
-                    <option value="1" {{ $bulan == 1 ? 'selected' : '' }}>Januari</option>
-                    <option value="2" {{ $bulan == 2 ? 'selected' : '' }}>Februari</option>
-                    <option value="3" {{ $bulan == 3 ? 'selected' : '' }}>Maret</option>
-                    <option value="4" {{ $bulan == 4 ? 'selected' : '' }}>April</option>
-                    <option value="5" {{ $bulan == 5 ? 'selected' : '' }}>Mei</option>
-                    <option value="6" {{ $bulan == 6 ? 'selected' : '' }}>Juni</option>
-                    <option value="7" {{ $bulan == 7 ? 'selected' : '' }}>Juli</option>
-                    <option value="8" {{ $bulan == 8 ? 'selected' : '' }}>Agustus</option>
-                    <option value="9" {{ $bulan == 9 ? 'selected' : '' }}>September</option>
-                    <option value="10" {{ $bulan == 10 ? 'selected' : '' }}>Oktober</option>
-                    <option value="11" {{ $bulan == 11 ? 'selected' : '' }}>November</option>
-                    <option value="12" {{ $bulan == 12 ? 'selected' : '' }}>Desember</option>
-                </select>
+            <!-- Filter Bulan & Tahun -->
+            @php
+                $namaBulan = [0 => 'Semua Bulan', 1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
+                $labelBulan = $namaBulan[$bulan] ?? 'Semua Bulan';
+                $labelTahun = $tahun > 0 ? $tahun : 'Semua Tahun';
+                $labelFilter = ($bulan > 0 || $tahun > 0) ? $labelBulan . ' ' . $labelTahun : 'Semua Waktu';
+            @endphp
+            <button type="button" onclick="bukaModalFilterBulan()" class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-600 hover:border-amber-300 focus:ring-2 focus:ring-amber-500 outline-none flex items-center gap-2 transition-colors">
+                <i class="fa-solid fa-calendar text-amber-400"></i> {{ $labelFilter }}
+            </button>
 
-                <button type="button" class="custom-select-trigger w-full bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-amber-500 flex items-center justify-between gap-2 text-left text-xs">
-                    <span class="custom-select-label text-gray-600">Semua Bulan</span>
-                    <i class="fa-solid fa-chevron-down custom-select-chevron text-amber-400 text-[10px] transition-transform duration-200"></i>
-                </button>
-
-                <div class="custom-select-dropdown bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="0">Semua Bulan</div>
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="1">Januari</div>
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="2">Februari</div>
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="3">Maret</div>
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="4">April</div>
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="5">Mei</div>
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="6">Juni</div>
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="7">Juli</div>
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="8">Agustus</div>
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="9">September</div>
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="10">Oktober</div>
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="11">November</div>
-                    <div class="custom-select-option px-3 py-2 text-xs text-gray-700 border-b border-gray-50" data-value="12">Desember</div>
-                </div>
-            </div>
-
-            <a href="{{ route('keuangan.pdf', ['bulan' => $bulan]) }}" target="_blank" class="text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:text-emerald-600 hover:border-emerald-300 px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2 tooltip" title="Ekspor PDF Keuangan">
+            <a href="{{ route('keuangan.pdf', ['bulan' => $bulan, 'tahun' => $tahun]) }}" target="_blank" class="text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:text-emerald-600 hover:border-emerald-300 px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2 tooltip" title="Ekspor PDF Keuangan">
                 <i class="fa-solid fa-file-pdf text-red-500"></i> <span class="hidden sm:inline">Ekspor PDF</span>
             </a>
         </div>
@@ -143,7 +114,7 @@
     </div>
 
     {{-- Desktop: Table Layout --}}
-    <div class="hidden lg:block overflow-x-auto">
+    <div class="hidden lg:block overflow-x-auto overflow-hidden rounded-b-2xl">
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-white text-gray-400 text-xs uppercase tracking-wider border-b">
@@ -229,6 +200,50 @@
     </div>
 </div>
 
+<div id="modalFilterBulan" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-2xl w-full max-w-xs mx-4 overflow-hidden transform scale-95 transition-transform duration-300 shadow-xl" id="modalFilterBulanBox">
+        <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-calendar mr-2 text-amber-500"></i>Filter Waktu</h3>
+            <button type="button" onclick="tutupModalFilterBulan()" class="text-gray-400 hover:text-red-500 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="p-3 space-y-3">
+            {{-- Tahun --}}
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Tahun</p>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="pilihFilter({{ $bulan }}, 0)" 
+                        class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors
+                        {{ $tahun == 0 ? 'bg-amber-100 text-amber-700 font-bold' : 'text-gray-500 hover:bg-gray-50' }}">
+                        Semua
+                    </button>
+                    @foreach($tahunTersedia as $th)
+                    <button type="button" onclick="pilihFilter({{ $bulan }}, {{ $th }})" 
+                        class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors
+                        {{ $tahun == $th ? 'bg-amber-100 text-amber-700 font-bold' : 'text-gray-500 hover:bg-gray-50' }}">
+                        {{ $th }}
+                    </button>
+                    @endforeach
+                </div>
+            </div>
+            {{-- Bulan --}}
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Bulan</p>
+                <div class="grid grid-cols-2 gap-2">
+                    @foreach($namaBulan as $val => $nama)
+                        <button type="button" onclick="pilihFilter({{ $val }}, {{ $tahun }})" 
+                            class="text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors
+                            {{ $bulan == $val ? 'bg-amber-100 text-amber-700 font-bold' : 'text-gray-600 hover:bg-gray-50' }}">
+                            {{ $nama }}
+                        </button>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
     const modalOp = document.getElementById('modalOperasional');
@@ -252,9 +267,34 @@
         }, 300);
     }
 
-    function filterPerBulan() {
-        const bulan = document.getElementById('filterBulan').value;
-        window.location.href = '{{ route("keuangan.index") }}?bulan=' + bulan;
+    // === MODAL FILTER BULAN ===
+    const modalFB = document.getElementById('modalFilterBulan');
+    const modalFBBox = document.getElementById('modalFilterBulanBox');
+
+    function bukaModalFilterBulan() {
+        modalFB.classList.remove('hidden');
+        modalFB.classList.add('flex');
+        setTimeout(() => {
+            modalFB.classList.remove('opacity-0');
+            modalFBBox.classList.remove('scale-95');
+        }, 10);
+    }
+
+    function tutupModalFilterBulan() {
+        modalFB.classList.add('opacity-0');
+        modalFBBox.classList.add('scale-95');
+        setTimeout(() => {
+            modalFB.classList.add('hidden');
+            modalFB.classList.remove('flex');
+        }, 300);
+    }
+
+    function pilihFilter(bulan, tahun) {
+        const params = new URLSearchParams();
+        if (bulan > 0) params.set('bulan', bulan);
+        if (tahun > 0) params.set('tahun', tahun);
+        const qs = params.toString();
+        window.location.href = '{{ route("keuangan.index") }}' + (qs ? '?' + qs : '');
     }
 </script>
 @endpush

@@ -32,9 +32,9 @@ class NasabahController extends Controller
     $rtStr = str_pad($request->rt, 2, '0', STR_PAD_LEFT);
     $prefix = $rwStr . $rtStr; // Hasilnya misal: "0301"
 
-    // 2. Cari nomor urut terakhir untuk RT/RW tersebut
-    // Kita cari kode yang dimulai dengan prefix 0301
-    $lastNasabah = \App\Models\Nasabah::where('kode', 'like', $prefix . '%')
+    // 2. Cari nomor urut terakhir untuk RT/RW tersebut (termasuk yg dinonaktifkan)
+    $lastNasabah = \App\Models\Nasabah::withTrashed()
+                    ->where('kode', 'like', $prefix . '%')
                     ->orderBy('kode', 'desc')
                     ->first();
 
@@ -84,7 +84,17 @@ class NasabahController extends Controller
 
     public function destroy(Nasabah $nasabah)
     {
-        $nasabah->delete();
-        return redirect()->route('nasabah.index')->with('success', 'Data nasabah berhasil dihapus!');
+        // Cek saldo aktif — jangan izinkan nonaktifkan kalau masih ada saldo
+        $saldo = $nasabah->tabungan ? $nasabah->tabungan->saldo_saat_ini : 0;
+        if ($saldo > 0) {
+            return back()->withErrors([
+                'error' => 'Nasabah «' . $nasabah->nama . '» masih memiliki saldo aktif Rp '
+                    . number_format($saldo, 0, ',', '.')
+                    . '. Tarik saldo terlebih dahulu sebelum menonaktifkan.'
+            ]);
+        }
+
+        $nasabah->delete(); // soft delete — data transaksi tetap utuh
+        return redirect()->route('nasabah.index')->with('success', 'Nasabah ' . $nasabah->nama . ' berhasil dinonaktifkan.');
     }
 }

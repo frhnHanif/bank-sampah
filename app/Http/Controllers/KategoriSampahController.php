@@ -43,7 +43,17 @@ class KategoriSampahController extends Controller
 
     public function destroy(KategoriSampah $kategori)
     {
-        $kategori->delete();
-        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil dihapus!');
+        // Cek apakah ada stok tersisa
+        $stokTersedia = $kategori->stok ? $kategori->stok->total_berat_kg : 0;
+        if ($stokTersedia > 0) {
+            return back()->withErrors([
+                'error' => 'Kategori «' . $kategori->nama . '» masih memiliki stok ' 
+                    . number_format($stokTersedia, 2, ',', '.') . ' kg di gudang. '
+                    . 'Jual stok terlebih dahulu sebelum menonaktifkan.'
+            ]);
+        }
+
+        $kategori->delete(); // soft delete — data transaksi tetap utuh
+        return redirect()->route('kategori.index')->with('success', 'Kategori ' . $kategori->nama . ' berhasil dinonaktifkan.');
     }
 }

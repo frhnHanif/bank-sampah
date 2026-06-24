@@ -595,18 +595,26 @@
         document.getElementById('cartDataInput').value = JSON.stringify(cart);
     }
 
-    function simpanTransaksi() {
+    async function simpanTransaksi() {
         const nasabahId = document.getElementById('nasabahIdInput').value;
         if (!nasabahId) {
-            alert('Mohon pilih nasabah terlebih dahulu!');
+            showToast('Mohon pilih nasabah terlebih dahulu!', 'warning');
             return;
         }
         if (cart.length === 0) {
-            alert('Keranjang masih kosong!');
+            showToast('Keranjang masih kosong!', 'warning');
             return;
         }
+
+        const confirmed = await showConfirm(
+            'Simpan transaksi setor ini? Saldo nasabah akan bertambah dan stok gudang akan diperbarui.',
+            'Konfirmasi Penyetoran',
+            'emerald'
+        );
         
-        document.getElementById('formTransaksi').submit();
+        if (confirmed) {
+            document.getElementById('formTransaksi').submit();
+        }
     }
 </script>
 @endpush

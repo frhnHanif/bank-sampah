@@ -17,18 +17,25 @@ class TabunganController extends Controller
     {
         $nasabah = Nasabah::with('tabungan')->findOrFail($id);
         
-        // Filter bulan (1-12), default 0 = semua
-        $bulan = $request->query('bulan', 0);
+        $bulan = (int) $request->query('bulan', 0);
+        $tahun = (int) $request->query('tahun', 0);
 
-        // Ambil riwayat mutasi, urutkan dari yang terbaru
         $query = MutasiTabungan::with('transaksiSetor.items.kategori')
             ->where('nasabah_id', $id);
         if ($bulan > 0 && $bulan <= 12) {
             $query->whereMonth('tanggal', $bulan);
         }
+        if ($tahun > 0) {
+            $query->whereYear('tanggal', $tahun);
+        }
         $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->get();
 
-        return view('tabungan.show', compact('nasabah', 'mutasi', 'bulan'));
+        // Tahun tersedia untuk filter
+        $tahunTersedia = MutasiTabungan::where('nasabah_id', $id)
+            ->selectRaw('YEAR(tanggal) as tahun')
+            ->distinct()->orderBy('tahun', 'desc')->pluck('tahun');
+
+        return view('tabungan.show', compact('nasabah', 'mutasi', 'bulan', 'tahun', 'tahunTersedia'));
     }
 
     // Memproses penarikan saldo
@@ -85,27 +92,29 @@ class TabunganController extends Controller
     {
         $nasabah = Nasabah::with('tabungan')->findOrFail($id);
         
-        // Filter bulan (1-12), default 0 = semua
-        $bulan = $request->query('bulan', 0);
+        $bulan = (int) $request->query('bulan', 0);
+        $tahun = (int) $request->query('tahun', 0);
 
         $query = MutasiTabungan::with('transaksiSetor.items.kategori')
             ->where('nasabah_id', $id);
         if ($bulan > 0 && $bulan <= 12) {
             $query->whereMonth('tanggal', $bulan);
         }
+        if ($tahun > 0) {
+            $query->whereYear('tanggal', $tahun);
+        }
         $mutasi = $query->orderBy('tanggal', 'asc')->get();
 
-        // Nama bulan untuk judul PDF
         $namaBulan = [1 => 'Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
         $labelBulan = ($bulan > 0) ? '_' . $namaBulan[$bulan] : '';
+        $labelTahun = ($tahun > 0) ? '_' . $tahun : '';
 
-        // Load view HTML khusus PDF
         $pdf = Pdf::loadView('tabungan.pdf', compact('nasabah', 'mutasi', 'bulan'));
         
         // Atur ukuran kertas ke A4 Portrait
         $pdf->setPaper('A4', 'portrait');
 
-        return $pdf->stream('Buku_Tabungan_' . str_replace(' ', '_', $nasabah->nama) . $labelBulan . '.pdf');
+        return $pdf->stream('Buku_Tabungan_' . str_replace(' ', '_', $nasabah->nama) . $labelBulan . $labelTahun . '.pdf');
     }
 
     public function generateIdCard($id)

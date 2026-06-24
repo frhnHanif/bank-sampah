@@ -70,10 +70,10 @@
             <button type="button" onclick="bukaModalEdit({{ $item->id }}, '{{ addslashes($item->nama) }}', {{ $item->harga_beli_per_kg }}, {{ $item->faktor_emisi }})" class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 py-2.5 rounded-xl text-sm font-bold transition-colors">
                 <i class="fa-solid fa-pen-to-square"></i> Edit
             </button>
-            <form action="{{ route('kategori.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin hapus kategori sampah ini?')" class="shrink-0">
+            <form action="{{ route('kategori.destroy', $item->id) }}" method="POST" class="shrink-0 delete-form">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="w-11 h-11 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors" title="Hapus">
+                <button type="button" onclick="hapusKategori(this)" class="w-11 h-11 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors" title="Hapus">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </form>
@@ -273,6 +273,17 @@
             modalEdit.classList.add('hidden');
             modalEdit.classList.remove('flex');
         }, 300);
+    }
+
+    async function hapusKategori(btn) {
+        const confirmed = await showConfirm(
+            'Nonaktifkan kategori ini? Data transaksi tetap tersimpan, namun kategori tidak akan muncul lagi di daftar aktif.',
+            'Konfirmasi Nonaktifkan Kategori',
+            'red'
+        );
+        if (confirmed) {
+            btn.closest('.delete-form').submit();
+        }
     }
 </script>
 @endpush

@@ -39,11 +39,16 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
+        /* === Mobile Scaling 90% === */
+        @media (max-width: 1023px) {
+            html { zoom: 0.9; }
+        }
+
         /* === Custom Select === */
         .custom-select-trigger { cursor: pointer; user-select: none; }
         .custom-select-dropdown { 
             position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 60;
-            max-height: 220px; overflow-y: auto;
+            max-height: 340px; overflow-y: auto;
             opacity: 0; visibility: hidden; transform: translateY(-8px);
             transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
         }
@@ -122,8 +127,9 @@
     <nav class="lg:hidden fixed bottom-4 left-4 right-4 z-50 bg-gray-50/95 backdrop-blur-xl p-1.5 rounded-[2rem] border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex justify-between items-center">
         <a href="{{ route('dashboard') }}" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 text-gray-400">
             <i class="fa-solid fa-border-all text-lg mb-0.5"></i>
-            <span class="text-[10px] tracking-wide">Home</span>
+            <span class="text-[10px] tracking-wide">Dashboard</span>
         </a>
+        @auth
         <a href="{{ route('setor.create') }}" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 {{ request()->routeIs('setor.*') ? 'bg-white shadow-sm text-emerald-500 font-bold' : 'text-gray-400 hover:text-gray-600 font-medium' }}">
             <i class="fa-solid fa-cash-register text-lg mb-0.5"></i>
             <span class="text-[10px] tracking-wide">Kasir</span>
@@ -144,6 +150,7 @@
             <i class="fa-solid fa-users text-lg mb-0.5"></i>
             <span class="text-[10px] tracking-wide">Nasabah</span>
         </a>
+        @endauth
     </nav>
 
     <main class="pt-28 pb-28 lg:pb-12 px-4 sm:px-6 max-w-screen-2xl mx-auto relative z-30">

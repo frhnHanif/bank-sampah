@@ -71,10 +71,10 @@
             <button type="button" onclick="bukaModalEdit({{ $item->id }}, '{{ addslashes($item->nama) }}', '{{ $item->rt }}', '{{ $item->rw }}', '{{ $item->no_hp }}')" class="w-11 h-11 flex items-center justify-center bg-blue-50 text-blue-500 hover:bg-blue-100 rounded-xl transition-colors shrink-0" title="Edit">
                 <i class="fa-solid fa-pen-to-square"></i>
             </button>
-            <form action="{{ route('nasabah.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus data nasabah ini secara permanen?')" class="shrink-0">
+            <form action="{{ route('nasabah.destroy', $item->id) }}" method="POST" class="shrink-0 delete-form">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="w-11 h-11 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors" title="Hapus">
+                <button type="button" onclick="hapusNasabah(this)" class="w-11 h-11 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors" title="Hapus">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </form>
@@ -292,6 +292,17 @@
             modalEdit.classList.add('hidden');
             modalEdit.classList.remove('flex');
         }, 300);
+    }
+
+    async function hapusNasabah(btn) {
+        const confirmed = await showConfirm(
+            'Nonaktifkan nasabah ini? Data transaksi dan tabungan tetap tersimpan, namun nasabah tidak akan muncul lagi di daftar aktif.',
+            'Konfirmasi Nonaktifkan Nasabah',
+            'red'
+        );
+        if (confirmed) {
+            btn.closest('.delete-form').submit();
+        }
     }
 </script>
 @endpush
