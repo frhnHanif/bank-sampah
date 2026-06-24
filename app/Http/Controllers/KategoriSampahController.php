@@ -17,9 +17,13 @@ class KategoriSampahController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->has('harga_beli_per_kg')) {
+            $request->merge(['harga_beli_per_kg' => (int) str_replace('.', '', $request->harga_beli_per_kg)]);
+        }
+
         $request->validate([
             'nama' => 'required|string|max:255',
-            'harga_beli_per_kg' => 'required|numeric|min:0',
+            'harga_beli_per_kg' => 'required|integer|min:0',
             'faktor_emisi' => 'required|numeric|min:0',
         ]);
 
@@ -30,9 +34,13 @@ class KategoriSampahController extends Controller
 
     public function update(Request $request, KategoriSampah $kategori)
     {
+        if ($request->has('harga_beli_per_kg')) {
+            $request->merge(['harga_beli_per_kg' => (int) str_replace('.', '', $request->harga_beli_per_kg)]);
+        }
+
         $request->validate([
             'nama' => 'required|string|max:255',
-            'harga_beli_per_kg' => 'required|numeric|min:0',
+            'harga_beli_per_kg' => 'required|integer|min:0',
             'faktor_emisi' => 'required|numeric|min:0',
         ]);
 

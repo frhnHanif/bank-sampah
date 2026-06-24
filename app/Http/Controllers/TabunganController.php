@@ -41,9 +41,14 @@ class TabunganController extends Controller
     // Memproses penarikan saldo
     public function tarik(Request $request, $id)
     {
+        // Bersihkan format ribuan dari input-rupiah
+        if ($request->has('jumlah')) {
+            $request->merge(['jumlah' => (int) str_replace('.', '', $request->jumlah)]);
+        }
+
         $request->validate([
             'tanggal' => 'required|date',
-            'jumlah' => 'required|numeric|min:100',
+            'jumlah' => 'required|integer|min:100',
             'keterangan' => 'nullable|string|max:255'
         ]);
 

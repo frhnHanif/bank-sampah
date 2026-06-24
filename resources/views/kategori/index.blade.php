@@ -122,8 +122,8 @@
 
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Harga Beli per Kg (Rp)</label>
-                    <input type="number" name="harga_beli_per_kg" required min="0" placeholder="Contoh: 1500"
-                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <input type="text" inputmode="numeric" name="harga_beli_per_kg" required placeholder="Contoh: 1.500"
+                        class="input-rupiah w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
 
                 <div>
@@ -168,8 +168,8 @@
 
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Harga Beli per Kg (Rp)</label>
-                    <input type="number" name="harga_beli_per_kg" id="editHarga" required min="0"
-                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <input type="text" inputmode="numeric" name="harga_beli_per_kg" id="editHarga" required
+                        class="input-rupiah w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
 
                 <div>
@@ -255,7 +255,7 @@
         formEdit.action = `/kategori/${id}`;
         
         document.getElementById('editNama').value = nama;
-        document.getElementById('editHarga').value = harga;
+        document.getElementById('editHarga').value = parseInt(harga).toLocaleString('id-ID');
         document.getElementById('editEmisi').value = emisi;
 
         modalEdit.classList.remove('hidden');

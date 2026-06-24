@@ -65,8 +65,8 @@
     @endforelse
 </div>
 
-<div id="modalJual" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300 overflow-y-auto p-4 sm:p-6">
-    <div class="bg-gray-50 rounded-2xl w-full max-w-5xl mx-auto overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-full" id="modalJualBox">
+<div id="modalJual" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300 overflow-y-auto p-4 sm:p-6 pt-24 pb-28 lg:pt-6 lg:pb-6">
+    <div class="bg-gray-50 rounded-2xl w-full max-w-5xl mx-auto overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[75vh] lg:max-h-full" id="modalJualBox">
         
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-white shrink-0">
             <div>
@@ -145,7 +145,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-amber-700 mb-2">Harga Jual (Rp/Kg)</label>
-                                    <input type="number" id="hargaInput" min="0" placeholder="Harga Pengepul" class="w-full bg-white border border-amber-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-amber-500">
+                                    <input type="text" inputmode="numeric" id="hargaInput" placeholder="Harga Pengepul" class="input-rupiah w-full bg-white border border-amber-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-amber-500">
                                 </div>
                             </div>
 
@@ -252,7 +252,7 @@
 
         const kategori_id = selectKat.value;
         const berat = parseFloat(inputBerat.value);
-        const harga_jual = parseFloat(inputHarga.value);
+        const harga_jual = getNilaiAsli(inputHarga);
 
         if (!kategori_id || isNaN(berat) || berat <= 0 || isNaN(harga_jual) || harga_jual <= 0) {
             showToast('Lengkapi barang, berat, dan harga jual dengan benar!', 'warning');

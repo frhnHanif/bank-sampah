@@ -385,6 +385,24 @@
     function closeAllSelects() {
         document.querySelectorAll('.custom-select.open').forEach(el => el.classList.remove('open'));
     }
+
+    // ==================== INPUT RIBUAN FORMATTER ====================
+    function formatRibuan(input) {
+        let val = input.value.replace(/\D/g, '');          // hapus semua non-digit
+        if (val === '') { input.value = ''; return; }
+        input.value = parseInt(val, 10).toLocaleString('id-ID');
+    }
+
+    function getNilaiAsli(input) {
+        return parseInt(input.value.replace(/\D/g, ''), 10) || 0;
+    }
+
+    // Pasang formatter ke semua .input-rupiah (termasuk yang ditambah dinamis)
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('input-rupiah')) {
+            formatRibuan(e.target);
+        }
+    });
 </script>
 </body>
 </html>

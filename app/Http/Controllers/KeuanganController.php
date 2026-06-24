@@ -80,9 +80,14 @@ class KeuanganController extends Controller
     // Mencatat biaya operasional pengelola
     public function storeOperasional(Request $request)
     {
+        // Bersihkan format ribuan dari input-rupiah
+        if ($request->has('nominal')) {
+            $request->merge(['nominal' => (int) str_replace('.', '', $request->nominal)]);
+        }
+
         $request->validate([
             'tanggal'    => 'required|date',
-            'nominal'    => 'required|numeric|min:100',
+            'nominal'    => 'required|integer|min:100',
             'keterangan' => 'required|string|max:255',
         ]);
 
