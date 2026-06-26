@@ -101,7 +101,7 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-500 mb-1.5">ID / Kode Nasabah</label>
                         <input type="text" name="kode" value="{{ old('kode') }}" required
-                               placeholder="Contoh: NSB001"
+                               placeholder="Contoh: 001001001"
                                class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
                     </div>
                     <div>
