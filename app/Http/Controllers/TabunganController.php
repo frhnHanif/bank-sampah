@@ -35,7 +35,8 @@ class TabunganController extends Controller
             ->selectRaw('YEAR(tanggal) as tahun')
             ->distinct()->orderBy('tahun', 'desc')->pluck('tahun');
 
-        return view('tabungan.show', compact('nasabah', 'mutasi', 'bulan', 'tahun', 'tahunTersedia'));
+        return view('tabungan.show', compact('nasabah', 'mutasi', 'bulan', 'tahun', 'tahunTersedia'))
+            ->with('isNasabahView', !auth()->check());
     }
 
     // Memproses penarikan saldo

@@ -11,6 +11,7 @@ use App\Http\Controllers\TransaksiJualController;
 use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\KonfigurasiController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\NasabahAuthController;
 
 // ─── PUBLIC ───────────────────────────────────────────────────
 
@@ -23,6 +24,18 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// ─── CEK REKENING NASABAH ────────────────────────────────────
+
+Route::post('/cek-rekening', [NasabahAuthController::class, 'cek'])->name('nasabah.cek');
+Route::post('/nasabah/logout', [NasabahAuthController::class, 'logout'])->name('nasabah.logout');
+
+// ─── TABUNGAN (pengurus login ATAU nasabah session) ──────────
+
+Route::middleware('nasabah.access')->group(function () {
+    Route::get('/nasabah/{id}/tabungan', [TabunganController::class, 'show'])->name('tabungan.show');
+    Route::get('/nasabah/{id}/tabungan/pdf', [TabunganController::class, 'exportPdf'])->name('tabungan.pdf');
+});
+
 // ─── PENGURUS (harus login) ───────────────────────────────────
 
 Route::middleware('auth')->group(function () {
@@ -30,9 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('kategori', KategoriSampahController::class);
     Route::resource('nasabah', NasabahController::class);
     Route::resource('setor', TransaksiSetorController::class);
-    Route::get('/nasabah/{id}/tabungan', [TabunganController::class, 'show'])->name('tabungan.show');
     Route::post('/nasabah/{id}/tabungan/tarik', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
-    Route::get('/nasabah/{id}/tabungan/pdf', [TabunganController::class, 'exportPdf'])->name('tabungan.pdf');
     Route::get('/nasabah/{id}/id-card', [App\Http\Controllers\TabunganController::class, 'generateIdCard'])->name('tabungan.idcard');
     Route::get('/stok', [StokController::class, 'index'])->name('stok.index');
     Route::get('/jual', [TransaksiJualController::class, 'create'])->name('jual.create');

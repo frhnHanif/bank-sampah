@@ -12,7 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'admin.pin' => \App\Http\Middleware\AdminPin::class,
+            'admin.pin'      => \App\Http\Middleware\AdminPin::class,
+            'nasabah.access' => \App\Http\Middleware\NasabahAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

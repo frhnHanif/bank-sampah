@@ -4,9 +4,18 @@
 <div class="max-w-7xl mx-auto">
     <div class="mb-6 flex items-center justify-between">
         <div>
+            @unless($isNasabahView)
             <a href="{{ route('nasabah.index') }}" class="text-emerald-600 font-bold text-sm flex items-center gap-2 hover:underline mb-2">
                 <i class="fa-solid fa-arrow-left"></i> Kembali ke Data Nasabah
             </a>
+            @else
+            <form action="{{ route('nasabah.logout') }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="text-sky-600 font-bold text-sm flex items-center gap-2 hover:underline mb-2">
+                    <i class="fa-solid fa-arrow-left"></i> Keluar dari Cek Rekening
+                </button>
+            </form>
+            @endunless
             <h1 class="text-2xl font-black text-gray-800 tracking-tight">Buku Tabungan Nasabah</h1>
         </div>
     </div>
@@ -111,9 +120,11 @@
             
             <div class="relative bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-6 text-white shadow-lg shadow-emerald-200">
                 
+                @unless($isNasabahView)
                 <button type="button" onclick="bukaModalEdit()" class="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center transition-colors backdrop-blur-sm tooltip" title="Edit Profil Nasabah">
                     <i class="fa-solid fa-pen text-sm"></i>
                 </button>
+                @endunless
 
                 <div class="flex items-center gap-3 mb-6 pr-8 mt-2">
                     <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl backdrop-blur-sm shrink-0">
@@ -132,6 +143,7 @@
 
                 <div class="mt-6 pt-5 border-t border-emerald-400/30 flex items-center gap-3">
                     
+                    @unless($isNasabahView)
                     <button type="button" onclick="bukaModalTarik()" class="flex-1 bg-white text-emerald-700 hover:bg-emerald-50 font-black py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
                         <i class="fa-solid fa-hand-holding-dollar text-lg"></i> Tarik Tunai
                     </button>
@@ -139,6 +151,11 @@
                     <a href="{{ route('tabungan.idcard', $nasabah->id) }}" target="_blank" class="w-14 h-[52px] bg-emerald-600 hover:bg-emerald-500 border border-emerald-400/50 text-white rounded-xl transition-colors shadow-sm flex items-center justify-center shrink-0 tooltip" title="Cetak QR ID Card">
                         <i class="fa-solid fa-qrcode text-xl"></i>
                     </a>
+                    @else
+                    <div class="flex-1 text-center text-emerald-100 text-sm py-2">
+                        <i class="fa-solid fa-lock mr-1.5"></i> Hanya bisa dilihat
+                    </div>
+                    @endunless
 
                 </div>
             </div>
