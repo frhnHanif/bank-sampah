@@ -26,7 +26,7 @@ class KonfigurasiController extends Controller
     {
         $request->validate(['pin' => ['required', 'string']]);
 
-        $pinTersimpan = PengaturanSistem::ambilString('admin_pin', '123456');
+        $pinTersimpan = PengaturanSistem::ambilString('admin_pin');
 
         if ($request->pin === $pinTersimpan) {
             session(['admin_authenticated' => true]);

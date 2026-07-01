@@ -71,8 +71,14 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-500 mb-1.5">Password</label>
-                        <input type="password" name="password" required
-                               class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                        <div class="relative">
+                            <input type="password" name="password" id="password" required
+                                   class="w-full px-3.5 py-2.5 pr-10 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                            <button type="button" onclick="togglePassword()"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 cursor-pointer" tabindex="-1">
+                                <i id="eyeIcon" class="fa-solid fa-eye text-sm"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="flex items-center gap-2">
                         <input type="checkbox" name="remember" id="remember" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
@@ -148,6 +154,20 @@
         @if($errors->has('kode') || $errors->has('no_hp'))
         switchTab('nasabah');
         @endif
+
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
     </script>
 
 </body>

@@ -60,7 +60,8 @@ return new class extends Migration
             [
                 'kunci' => 'admin_pin',
                 'label' => 'PIN Admin',
-                'nilai' => '123456',
+                // Pastikan tambahkan ADMIN_PIN=xxxxxx di file .env
+                'nilai' => env('ADMIN_PIN'),
                 'satuan' => null,
                 'keterangan' => 'PIN untuk mengakses halaman konfigurasi sistem.',
                 'created_at' => now(),
