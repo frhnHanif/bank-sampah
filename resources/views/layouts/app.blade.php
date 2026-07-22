@@ -76,6 +76,18 @@
                 <i class="fa-solid fa-border-all"></i> Dashboard
             </a>
 
+            @guest
+            @if(session('nasabah_id'))
+            <a href="{{ route('tabungan.show', session('nasabah_id')) }}" class="{{ request()->routeIs('tabungan.*') ? 'bg-white shadow-sm text-sky-700 font-bold' : 'text-gray-500 hover:text-gray-800 font-medium' }} px-5 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-book-open"></i> Tabungan
+            </a>
+            @else
+            <a href="{{ route('nasabah.login') }}" class="{{ request()->routeIs('nasabah.login') ? 'bg-white shadow-sm text-sky-700 font-bold' : 'text-gray-500 hover:text-gray-800 font-medium' }} px-5 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-users"></i> Nasabah
+            </a>
+            @endif
+            @endguest
+
             @auth
             <a href="{{ route('setor.create') }}" class="{{ request()->routeIs('setor.*') ? 'bg-white shadow-sm text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-800 font-medium' }} px-5 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2">
                 <i class="fa-solid fa-cash-register"></i> Kasir
@@ -109,7 +121,7 @@
             <div class="flex items-center gap-2">
                 <span class="hidden sm:inline text-xs font-bold text-gray-500">{{ auth()->user()->name }}</span>
                 <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
-                   class="w-10 h-10 bg-red-50 border border-red-200 rounded-full flex items-center justify-center text-red-500 hover:bg-red-100 transition-colors cursor-pointer" title="Logout">
+                   class="w-10 h-10 bg-red-50 border border-red-200 rounded-full flex items-center justify-center text-red-500 hover:bg-red-100 transition-colors cursor-pointer" title="Logout Pengurus">
                     <i class="fa-solid fa-right-from-bracket text-xs"></i>
                 </a>
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
@@ -117,9 +129,22 @@
                 </form>
             </div>
             @else
-            <a href="{{ route('login') }}" class="w-10 h-10 bg-gray-50 border border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-colors" title="Login Pengurus">
-                <i class="fa-solid fa-user-shield text-sm"></i>
-            </a>
+                @if(session('nasabah_id'))
+                <div class="flex items-center gap-2">
+                    <span class="hidden sm:inline text-xs font-bold text-sky-600">{{ session('nasabah_nama') }}</span>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('nasabah-logout-form').submit();" 
+                       class="w-10 h-10 bg-sky-50 border border-sky-200 rounded-full flex items-center justify-center text-sky-500 hover:bg-sky-100 transition-colors cursor-pointer" title="Logout Nasabah">
+                        <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                    </a>
+                    <form id="nasabah-logout-form" action="{{ route('nasabah.logout') }}" method="POST" class="hidden">
+                        @csrf
+                    </form>
+                </div>
+                @else
+                <a href="{{ route('login') }}" class="w-10 h-10 bg-gray-50 border border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-colors" title="Login Pengurus">
+                    <i class="fa-solid fa-user-shield text-sm"></i>
+                </a>
+                @endif
             @endauth
         </div>
     </nav>
@@ -129,6 +154,23 @@
             <i class="fa-solid fa-border-all text-lg mb-0.5"></i>
             <span class="text-[10px] tracking-wide">Dashboard</span>
         </a>
+        @guest
+            @if(session('nasabah_id'))
+            <a href="{{ route('tabungan.show', session('nasabah_id')) }}" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 {{ request()->routeIs('tabungan.*') ? 'bg-white shadow-sm text-sky-500 font-bold' : 'text-gray-400 hover:text-gray-600 font-medium' }}">
+                <i class="fa-solid fa-book-open text-lg mb-0.5"></i>
+                <span class="text-[10px] tracking-wide">Tabungan</span>
+            </a>
+            <a href="#" onclick="event.preventDefault(); document.getElementById('nasabah-logout-form').submit();" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 text-red-400 hover:text-red-600">
+                <i class="fa-solid fa-right-from-bracket text-lg mb-0.5"></i>
+                <span class="text-[10px] tracking-wide">Keluar</span>
+            </a>
+            @else
+            <a href="{{ route('nasabah.login') }}" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 {{ request()->routeIs('nasabah.login') ? 'bg-white shadow-sm text-sky-500 font-bold' : 'text-gray-400 hover:text-gray-600 font-medium' }}">
+                <i class="fa-solid fa-users text-lg mb-0.5"></i>
+                <span class="text-[10px] tracking-wide">Nasabah</span>
+            </a>
+            @endif
+        @endguest
         @auth
         <a href="{{ route('setor.create') }}" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all duration-300 {{ request()->routeIs('setor.*') ? 'bg-white shadow-sm text-emerald-500 font-bold' : 'text-gray-400 hover:text-gray-600 font-medium' }}">
             <i class="fa-solid fa-cash-register text-lg mb-0.5"></i>

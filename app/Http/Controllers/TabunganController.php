@@ -85,7 +85,34 @@ class TabunganController extends Controller
             ]);
 
             DB::commit();
-            return back()->with('success', 'Penarikan dana sebesar Rp ' . number_format($request->jumlah, 0, ',', '.') . ' berhasil dicatat.');
+
+            // === LOGIKA WHATSAPP NOTA TARIK TUNAI ===
+            $saldo_terbaru = $nasabah->tabungan->fresh()->saldo_saat_ini;
+            $no_hp = $nasabah->no_hp ?? '';
+
+            if (str_starts_with($no_hp, '0')) {
+                $no_hp = '62' . substr($no_hp, 1);
+            }
+
+            $pesanWa = "*[Invoice Tarik Tunai Bank Sampah]*\n\n";
+            $pesanWa .= "Halo *{$nasabah->nama}*,\n";
+            $pesanWa .= "Penarikan tunai telah berhasil diproses. Berikut rinciannya:\n\n";
+            $pesanWa .= "📅 Tanggal : {$request->tanggal}\n";
+            $pesanWa .= "💸 Jumlah Tarik : Rp " . number_format($request->jumlah, 0, ',', '.') . "\n";
+            if ($request->keterangan) {
+                $pesanWa .= "📝 Keterangan : {$request->keterangan}\n";
+            }
+            $pesanWa .= "💰 Sisa Saldo : Rp " . number_format($saldo_terbaru, 0, ',', '.') . "\n\n";
+            $pesanWa .= "Terima kasih telah menggunakan layanan Bank Sampah. ♻️ \n\n";
+            $pesanWa .= "Terimakasih.\nPengurus Bank Sampah Ngudia Wilujeng";
+
+            $wa_url = "https://wa.me/{$no_hp}?text=" . urlencode($pesanWa);
+            // ==========================================
+
+            return back()
+                ->with('success', 'Penarikan dana sebesar Rp ' . number_format($request->jumlah, 0, ',', '.') . ' berhasil dicatat.')
+                ->with('wa_url', $wa_url)
+                ->with('wa_nasabah', $nasabah->nama);
 
         } catch (\Exception $e) {
             DB::rollBack();

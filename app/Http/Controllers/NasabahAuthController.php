@@ -9,6 +9,38 @@ use Illuminate\Validation\ValidationException;
 class NasabahAuthController extends Controller
 {
     /**
+     * Tampilkan form cek rekening nasabah.
+     * Jika sudah login & belum expired (15 menit), langsung ke tabungan.
+     */
+    public function showLogin()
+    {
+        // Nasabah sudah login & session belum expired?
+        if ($this->isSessionActive()) {
+            return redirect()->route('tabungan.show', session('nasabah_id'));
+        }
+
+        return view('auth.nasabah-login');
+    }
+
+    /**
+     * Cek apakah sesi nasabah masih aktif (dalam 15 menit terakhir).
+     */
+    private function isSessionActive(): bool
+    {
+        if (! session('nasabah_id')) {
+            return false;
+        }
+
+        $loginAt = session('nasabah_login_at');
+        if (! $loginAt) {
+            return false;
+        }
+
+        // Timeout 15 menit (900 detik)
+        return (time() - (int) $loginAt) < 900;
+    }
+
+    /**
      * Proses cek rekening nasabah via kode + no_hp.
      */
     public function cek(Request $request)
@@ -33,9 +65,10 @@ class NasabahAuthController extends Controller
 
         // Simpan sesi nasabah
         session([
-            'nasabah_id'   => $nasabah->id,
-            'nasabah_kode' => $nasabah->kode,
-            'nasabah_nama' => $nasabah->nama,
+            'nasabah_id'       => $nasabah->id,
+            'nasabah_kode'     => $nasabah->kode,
+            'nasabah_nama'     => $nasabah->nama,
+            'nasabah_login_at' => time(),
         ]);
 
         return redirect()->route('tabungan.show', $nasabah->id);
@@ -46,7 +79,7 @@ class NasabahAuthController extends Controller
      */
     public function logout()
     {
-        session()->forget(['nasabah_id', 'nasabah_kode', 'nasabah_nama']);
-        return redirect()->route('login')->with('success', 'Anda telah keluar dari cek rekening.');
+        session()->forget(['nasabah_id', 'nasabah_kode', 'nasabah_nama', 'nasabah_login_at']);
+        return redirect()->route('nasabah.login')->with('success', 'Anda telah keluar dari cek rekening.');
     }
 }

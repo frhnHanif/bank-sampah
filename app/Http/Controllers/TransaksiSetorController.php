@@ -117,7 +117,8 @@ class TransaksiSetorController extends Controller
             }
 
             // Rangkai Teks Pesan WhatsApp
-            $pesanWa = "Halo *{$nasabah->nama}*,\n";
+            $pesanWa = "*[Invoice Transaksi Bank Sampah]*\n\n";
+            $pesanWa .= "Halo *{$nasabah->nama}*,\n";
             $pesanWa .= "Terima kasih telah menyetor sampah di Bank Sampah. Berikut rincian transaksi Anda pada *{$request->tanggal}*:\n\n";
             
             foreach ($cart as $item) {
@@ -128,7 +129,8 @@ class TransaksiSetorController extends Controller
             
             $pesanWa .= "\n*Total Pemasukan : Rp " . number_format($total_nilai, 0, ',', '.') . "*\n";
             $pesanWa .= "Reduksi Emisi : {$total_co2} kg CO2\n\n";
-            $pesanWa .= "Saldo tabungan Anda telah diperbarui. Mari jaga lingkungan bersama! ♻️";
+            $pesanWa .= "Saldo tabungan Anda telah diperbarui. Mari jaga lingkungan bersama! \n\n";
+            $pesanWa .= "Terimakasih.\nPengurus Bank Sampah Ngudia Wilujeng";
 
             // Buat URL wa.me
             $wa_url = "https://wa.me/{$no_hp}?text=" . urlencode($pesanWa);

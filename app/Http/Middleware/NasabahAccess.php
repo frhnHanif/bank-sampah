@@ -24,10 +24,12 @@ class NasabahAccess
 
         // Nasabah yang sudah login via cek rekening — hanya untuk dirinya sendiri
         if (session('nasabah_id') && (int) session('nasabah_id') === (int) $routeId) {
+            // Refresh timestamp agar timeout 15 menit diperpanjang
+            session(['nasabah_login_at' => time()]);
             return $next($request);
         }
 
-        // Selain itu, redirect ke halaman cek rekening
-        return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+        // Selain itu, redirect ke halaman cek rekening nasabah
+        return redirect()->route('nasabah.login')->with('error', 'Silakan login terlebih dahulu.');
     }
 }

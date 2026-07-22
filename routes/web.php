@@ -26,6 +26,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // ─── CEK REKENING NASABAH ────────────────────────────────────
 
+Route::get('/nasabah/login', [NasabahAuthController::class, 'showLogin'])->name('nasabah.login');
 Route::post('/cek-rekening', [NasabahAuthController::class, 'cek'])->name('nasabah.cek');
 Route::post('/nasabah/logout', [NasabahAuthController::class, 'logout'])->name('nasabah.logout');
 
