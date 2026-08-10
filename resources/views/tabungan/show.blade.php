@@ -37,6 +37,33 @@
         </div>
     @endif
 
+    <section class="bg-white border border-gray-100 rounded-2xl shadow-sm mb-6 overflow-hidden">
+        <div class="p-5 border-b bg-amber-50">
+            <h2 class="font-black text-gray-800"><i class="fa-solid fa-box-open text-amber-500 mr-2"></i>Status Setoran</h2>
+            <p class="text-xs text-gray-500 mt-1">Saldo hanya mencakup nilai yang sudah settlement.</p>
+        </div>
+        <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-3 p-4">
+        @forelse($setoranItems as $item)
+            @php
+                $status = $item->status->value;
+                $pending = max(0, (float)$item->berat_kg - (float)$item->berat_teralokasi_kg);
+                $realized = $item->alokasi->sum(fn($allocation)=>(float)$allocation->nilai_hak_nasabah);
+            @endphp
+            <article class="border rounded-xl p-4">
+                <div class="flex justify-between gap-3">
+                    <div><p class="text-xs text-gray-400">{{ $item->transaksi->tanggal->format('d/m/Y') }}</p><h3 class="font-black text-gray-800">{{ $item->kategori?->nama ?? 'Kategori nonaktif' }}</h3></div>
+                    <span class="h-fit text-[10px] font-black px-2 py-1 rounded-full {{ $status==='SETTLED'?'bg-emerald-100 text-emerald-700':($status==='PARTIAL'?'bg-amber-100 text-amber-700':'bg-gray-100 text-gray-600') }}">{{ $status==='SETTLED'?'TERJUAL':($status==='PARTIAL'?'SEBAGIAN':'MENUNGGU') }}</span>
+                </div>
+                <div class="mt-3 text-xs text-gray-600"><p>Setor: <strong>{{ number_format($item->berat_kg,2,',','.') }} kg</strong></p><p>Sudah terjual: <strong>{{ number_format($item->berat_teralokasi_kg,2,',','.') }} kg</strong></p><p>Sisa pending: <strong>{{ number_format($pending,2,',','.') }} kg</strong></p></div>
+                @if($realized>0)<p class="mt-3 text-sm text-emerald-700">Nilai terealisasi: <strong>Rp {{ number_format($realized,0,',','.') }}</strong></p>@else<p class="mt-3 text-sm text-gray-400 italic">Nilai belum ditentukan</p>@endif
+                @foreach($item->alokasi as $allocation)<p class="mt-2 text-[11px] text-gray-500">Settlement {{ $allocation->itemJual->transaksi->tanggal->format('d/m/Y') }}: {{ number_format($allocation->berat_kg,2,',','.') }} kg @ Rp {{ number_format($allocation->harga_nasabah_per_kg,0,',','.') }}/kg</p>@endforeach
+            </article>
+        @empty
+            <p class="col-span-full text-center text-gray-400 p-6">Belum ada setoran flow baru.</p>
+        @endforelse
+        </div>
+    </section>
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <div class="lg:col-span-2 order-2 lg:order-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col">
@@ -69,6 +96,8 @@
                     $tglFormat = $tgl->day . ' ' . $bulanSingkat[$tgl->month - 1] . ' ' . $tgl->year;
                     $isKredit = $m->jenis == 'kredit';
                     $items = $isKredit && $m->transaksiSetor ? $m->transaksiSetor->items : null;
+                    $isSettlement = $isKredit && $m->ref_transaksi_jual_id;
+                    $settlementAllocations = $isSettlement ? $m->transaksiJual->items->flatMap->alokasi->filter(fn($a) => $a->itemSetor?->transaksi?->nasabah_id === $nasabah->id) : collect();
                 @endphp
                 <div class="p-4 hover:bg-gray-50/30 transition-colors">
                     <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-5">
@@ -83,7 +112,7 @@
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $isKredit ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }}">
                                     <i class="fa-solid {{ $isKredit ? 'fa-arrow-down text-emerald-500' : 'fa-arrow-up text-red-500' }} text-[9px]"></i>
-                                    {{ $isKredit ? 'Setor' : 'Tarik' }}
+                                    {{ $isSettlement ? 'Settlement' : ($isKredit ? 'Kredit Legacy' : 'Tarik') }}
                                 </span>
                                 <span class="text-sm font-bold {{ $isKredit ? 'text-emerald-600' : 'text-red-500' }}">
                                     {{ $isKredit ? '+' : '-' }} Rp {{ number_format($m->jumlah, 0, ',', '.') }}
@@ -98,6 +127,18 @@
                                     <span class="font-medium text-gray-700 truncate max-w-[180px]">{{ $item->kategori ? $item->kategori->nama : '—' }}</span>
                                     <span class="whitespace-nowrap">{{ number_format($item->berat_kg, 2, ',', '.') }} kg</span>
                                     <span class="whitespace-nowrap ml-auto font-semibold text-gray-600">Rp {{ number_format($item->nilai, 0, ',', '.') }}</span>
+                                </div>
+                                @endforeach
+                            </div>
+                            @endif
+
+                            @if($isSettlement && $settlementAllocations->count())
+                            <div class="space-y-1 mt-2">
+                                @foreach($settlementAllocations as $allocation)
+                                <div class="flex flex-wrap gap-2 text-xs bg-emerald-50 text-emerald-800 rounded-lg px-3 py-1.5">
+                                    <span class="font-bold">{{ $allocation->itemSetor->kategori?->nama }}</span>
+                                    <span>{{ number_format($allocation->berat_kg,2,',','.') }} kg</span>
+                                    <span>@ Rp {{ number_format($allocation->harga_nasabah_per_kg,0,',','.') }}/kg</span>
                                 </div>
                                 @endforeach
                             </div>
@@ -136,8 +177,8 @@
                     </div>
                 </div>
                 
-                <p class="text-emerald-100 text-sm font-medium uppercase tracking-wider mb-1">Total Saldo Aktif</p>
-                <h1 class="text-4xl font-black tracking-tight truncate">
+                <p class="text-emerald-100 text-sm font-medium uppercase tracking-wider mb-1">Saldo Tersedia</p>
+                <h1 data-testid="available-balance" class="text-4xl font-black tracking-tight truncate">
                     Rp {{ number_format($nasabah->tabungan ? $nasabah->tabungan->saldo_saat_ini : 0, 0, ',', '.') }}
                 </h1>
 

@@ -2,151 +2,60 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Nasabah;
+use App\Models\FaktorEmisi;
 use App\Models\KategoriSampah;
-use App\Models\TransaksiSetor;
-use App\Models\ItemSetor;
-use App\Models\Stok;
-use App\Models\Tabungan; // Tambahan baru
-use App\Models\MutasiTabungan; // Tambahan baru
+use App\Models\Nasabah;
+use App\Services\SetoranService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class TransaksiSetorController extends Controller
 {
     public function index()
     {
-        return redirect()->route('setor.create'); 
+        return redirect()->route('setor.create');
     }
 
     public function create()
     {
         $nasabah = Nasabah::with('tabungan')->orderBy('nama')->get();
-        $kategori = KategoriSampah::orderBy('nama')->get();
-        
-        return view('setor.create', compact('nasabah', 'kategori'));
+        $kategori = KategoriSampah::with('faktorEmisi')->orderBy('nama')->get();
+        $faktorEmisi = FaktorEmisi::where('aktif', true)->orderBy('nama_material')->get();
+
+        return view('setor.create', compact('nasabah', 'kategori', 'faktorEmisi'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, SetoranService $service)
     {
-        $request->validate([
-            'nasabah_id' => 'required|exists:nasabah,id',
-            'tanggal'    => 'required|date',
-            'cart_data'  => 'required|string', 
+        $data = $request->validate([
+            'nasabah_id' => ['required', 'integer', 'exists:nasabah,id'],
+            'tanggal' => ['required', 'date'],
+            'cart_data' => ['required', 'string'],
+            'catatan' => ['nullable', 'string'],
         ]);
-
-        $cart = json_decode($request->cart_data, true);
-        
-        if (empty($cart)) {
-            return back()->withErrors(['cart_data' => 'Keranjang setor masih kosong!']);
+        $cart = json_decode($data['cart_data'], true);
+        if (! is_array($cart) || $cart === []) {
+            throw ValidationException::withMessages(['cart_data' => 'Keranjang setor masih kosong.']);
         }
 
-        DB::beginTransaction();
-        try {
-            $total_nilai = 0;
-            $total_co2 = 0;
-
-            // 1. Buat Header Transaksi
-            $transaksi = TransaksiSetor::create([
-                'nasabah_id' => $request->nasabah_id,
-                'tanggal'    => $request->tanggal,
-                'total_nilai'=> 0, 
-                'total_co2'  => 0, 
-                'catatan'    => $request->catatan,
-            ]);
-
-            // 2. Looping Keranjang & Simpan Detail
-            foreach ($cart as $item) {
-                $kategori = KategoriSampah::find($item['kategori_id']);
-                $nilai = $item['berat'] * $kategori->harga_beli_per_kg;
-                $co2 = $item['berat'] * $kategori->faktor_emisi;
-
-                ItemSetor::create([
-                    'transaksi_setor_id' => $transaksi->id,
-                    'kategori_id'        => $kategori->id,
-                    'berat_kg'           => $item['berat'],
-                    'nilai'              => $nilai,
-                    'co2'                => $co2,
-                ]);
-
-                $total_nilai += $nilai;
-                $total_co2 += $co2;
-
-                // 3. Tambah / Update Stok Gudang
-                $stok = Stok::firstOrCreate(['kategori_id' => $kategori->id]);
-                $stok->increment('total_berat_kg', $item['berat']);
-            }
-
-            // 4. Update Total di Header Transaksi
-            $transaksi->update([
-                'total_nilai' => $total_nilai,
-                'total_co2'   => $total_co2,
-            ]);
-
-            // ==========================================
-            // 5. TAMBAHAN BARU: LOGIKA TABUNGAN & MUTASI
-            // ==========================================
-            
-            // Cek apakah nasabah sudah punya tabungan, jika belum buatkan
-            $tabungan = Tabungan::firstOrCreate(
-                ['nasabah_id' => $request->nasabah_id],
-                ['saldo_saat_ini' => 0]
-            );
-
-            // Tambah saldo nasabah
-            $tabungan->increment('saldo_saat_ini', $total_nilai);
-
-            // Catat riwayat uang masuk (Kredit)
-            MutasiTabungan::create([
-                'nasabah_id' => $request->nasabah_id,
-                'tanggal'    => $request->tanggal,
-                'jenis'      => 'kredit',
-                'jumlah'     => $total_nilai,
-                'keterangan' => 'Penyetoran sampah (' . count($cart) . ' item)',
-                'ref_transaksi_setor_id' => $transaksi->id,
-            ]);
-            // ==========================================
-
-            // === LOGIKA WHATSAPP NOTA ===
-            $nasabah = Nasabah::find($request->nasabah_id);
-            $no_hp = $nasabah->no_hp ?? ''; 
-            
-            // Format awalan nomor agar valid di URL wa.me (ubah 0 menjadi 62)
-            if (str_starts_with($no_hp, '0')) {
-                $no_hp = '62' . substr($no_hp, 1);
-            }
-
-            // Rangkai Teks Pesan WhatsApp
-            $pesanWa = "*[Invoice Transaksi Bank Sampah]*\n\n";
-            $pesanWa .= "Halo *{$nasabah->nama}*,\n";
-            $pesanWa .= "Terima kasih telah menyetor sampah di Bank Sampah. Berikut rincian transaksi Anda pada *{$request->tanggal}*:\n\n";
-            
-            foreach ($cart as $item) {
-                $kat = KategoriSampah::find($item['kategori_id']);
-                $sub = $item['berat'] * $kat->harga_beli_per_kg;
-                $pesanWa .= "• {$kat->nama} ({$item['berat']} kg) : Rp " . number_format($sub, 0, ',', '.') . "\n";
-            }
-            
-            $pesanWa .= "\n*Total Pemasukan : Rp " . number_format($total_nilai, 0, ',', '.') . "*\n";
-            $pesanWa .= "Reduksi Emisi : {$total_co2} kg CO2\n\n";
-            $pesanWa .= "Saldo tabungan Anda telah diperbarui. Mari jaga lingkungan bersama! \n\n";
-            $pesanWa .= "Terimakasih.\nPengurus Bank Sampah Ngudia Wilujeng";
-
-            // Buat URL wa.me
-            $wa_url = "https://wa.me/{$no_hp}?text=" . urlencode($pesanWa);
-            // ============================
-
-            DB::commit();
-            
-            // Kirim link wa_url ke halaman view
-            return redirect()->route('setor.create')
-                ->with('success', 'Transaksi berhasil disimpan!')
-                ->with('wa_url', $wa_url)
-                ->with('wa_nasabah', $nasabah->nama);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => 'Terjadi kesalahan sistem: ' . $e->getMessage()]);
+        $transaction = $service->create((int) $data['nasabah_id'], $data['tanggal'], $cart, $data['catatan'] ?? null);
+        $totalWeight = $transaction->items->sum(fn ($item) => (float) $item->berat_kg);
+        $details = $transaction->items->map(fn ($item) => sprintf(
+            '- %s - %s kg', $item->kategori->nama, number_format((float) $item->berat_kg, 2, ',', '.')
+        ))->implode("\n");
+        $message = "*[BUKTI SETOR BANK SAMPAH]*\n\nHalo *{$transaction->nasabah->nama}*,\n\n"
+            ."Setoran Anda telah diterima pada {$data['tanggal']}.\n\nRincian:\n{$details}\n\n"
+            .'Total berat: '.number_format($totalWeight, 2, ',', '.')." kg\n\n"
+            ."Status: Menunggu penjualan ke pengepul.\nNilai rupiah belum ditentukan. "
+            ."Saldo tabungan akan diperbarui setelah barang terkait terjual dan dilakukan settlement.\n\nTerima kasih.";
+        $phone = $transaction->nasabah->no_hp ?? '';
+        if (str_starts_with($phone, '0')) {
+            $phone = '62'.substr($phone, 1);
         }
+
+        return redirect()->route('setor.create')
+            ->with('success', 'Setoran dicatat sebagai pending. Saldo nasabah tidak berubah.')
+            ->with('wa_url', "https://wa.me/{$phone}?text=".urlencode($message))
+            ->with('wa_nasabah', $transaction->nasabah->nama);
     }
 }

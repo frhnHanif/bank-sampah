@@ -2,91 +2,73 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Stok;
-use App\Models\TransaksiJual;
-use App\Models\ItemJual;
-use App\Models\MutasiKas;
+use App\Exceptions\InventoryConsistencyException;
+use App\Services\PenjualanSettlementService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class TransaksiJualController extends Controller
 {
     public function create()
     {
-        // Hanya ambil kategori sampah yang stoknya > 0 (tidak kosong)
-        $stok = Stok::with('kategori')->where('total_berat_kg', '>', 0)->get();
-        return view('jual.create', compact('stok'));
+        return redirect()->route('stok.index');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, PenjualanSettlementService $service)
     {
-        $request->validate([
-            'tanggal'    => 'required|date',
-            'cart_data'  => 'required|string',
+        $data = $request->validate([
+            'tanggal' => ['required', 'date'],
+            'cart_data' => ['required', 'string'],
+            'catatan' => ['nullable', 'string', 'max:1000'],
         ]);
-
-        $cart = json_decode($request->cart_data, true);
-        
-        if (empty($cart)) {
-            return back()->withErrors(['cart_data' => 'Keranjang penjualan masih kosong!']);
+        $cart = json_decode($data['cart_data'], true);
+        if (! is_array($cart) || $cart === []) {
+            throw ValidationException::withMessages(['cart_data' => 'Keranjang penjualan masih kosong.']);
+        }
+        $ids = array_column($cart, 'kategori_id');
+        if (count($ids) !== count(array_unique($ids))) {
+            throw ValidationException::withMessages(['cart_data' => 'Satu kategori hanya boleh muncul sekali dalam penjualan.']);
         }
 
-        DB::beginTransaction();
         try {
-            $total_nilai = 0;
+            $sale = $service->create($data['tanggal'], $cart, $data['catatan'] ?? null);
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (InventoryConsistencyException $exception) {
+            return back()->withInput()->withErrors(['error' => $exception->getMessage()]);
+        } catch (Throwable $exception) {
+            Log::error('Sale settlement failed', ['exception' => $exception]);
 
-            // 1. Buat Header Transaksi Jual
-            $transaksi = TransaksiJual::create([
-                'tanggal'    => $request->tanggal,
-                'total_nilai'=> 0, 
-                'catatan'    => $request->catatan,
-            ]);
-
-            // 2. Looping Keranjang
-            foreach ($cart as $item) {
-                // Cek ulang stok di database untuk mencegah kecurangan/bug
-                $stok = Stok::where('kategori_id', $item['kategori_id'])->first();
-                
-                if (!$stok || $stok->total_berat_kg < $item['berat']) {
-                    throw new \Exception("Gagal! Stok " . $item['nama'] . " tidak mencukupi (Sisa: " . ($stok->total_berat_kg ?? 0) . " Kg)");
-                }
-
-                $nilai = $item['berat'] * $item['harga_jual'];
-
-                // Simpan Item Jual
-                ItemJual::create([
-                    'transaksi_jual_id'  => $transaksi->id,
-                    'kategori_id'        => $item['kategori_id'],
-                    'berat_kg'           => $item['berat'],
-                    'harga_jual_per_kg'  => $item['harga_jual'],
-                    'total_nilai'        => $nilai,
-                ]);
-
-                $total_nilai += $nilai;
-
-                // 3. KURANGI STOK GUDANG
-                $stok->decrement('total_berat_kg', $item['berat']);
-            }
-
-            // 4. Update Total Nilai Penjualan
-            $transaksi->update(['total_nilai' => $total_nilai]);
-
-            // 5. Catat ke Buku Kas Induk sebagai Pemasukan
-            MutasiKas::create([
-                'tanggal'    => $request->tanggal,
-                'tipe'       => 'pemasukan',
-                'kategori'   => 'Penjualan',
-                'nominal'    => $total_nilai,
-                'keterangan' => 'Penjualan ke Pengepul: ' . $request->catatan,
-            ]);
-
-            DB::commit();
-            return redirect()->route('stok.index')->with('success', 'Transaksi penjualan ke pengepul berhasil! Stok gudang telah dikurangi.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['error' => 'Penjualan gagal diproses. Tidak ada data yang diubah.']);
         }
+
+        $waLinks = $sale->items->flatMap->alokasi
+            ->filter(fn ($allocation) => $allocation->itemSetor)
+            ->groupBy(fn ($allocation) => $allocation->itemSetor->transaksi->nasabah_id)
+            ->map(function ($allocations) use ($sale) {
+                $nasabah = $allocations->first()->itemSetor->transaksi->nasabah;
+                $details = $allocations->map(fn ($allocation) => sprintf(
+                    '- %s: %s kg x Rp %s = Rp %s',
+                    $allocation->itemJual->kategori->nama,
+                    number_format((float) $allocation->berat_kg, 2, ',', '.'),
+                    number_format((float) $allocation->harga_nasabah_per_kg, 0, ',', '.'),
+                    number_format((float) $allocation->nilai_hak_nasabah, 0, ',', '.')
+                ))->implode("\n");
+                $amount = $allocations->sum(fn ($allocation) => (float) $allocation->nilai_hak_nasabah);
+                $phone = $nasabah->no_hp ?? '';
+                if (str_starts_with($phone, '0')) {
+                    $phone = '62'.substr($phone, 1);
+                }
+                $message = "*[SETTLEMENT BANK SAMPAH]*\n\nHalo *{$nasabah->nama}*,\n\nSebagian/seluruh setoran Anda telah terjual.\n{$details}\n\n"
+                    .'Nilai masuk tabungan: Rp '.number_format($amount, 0, ',', '.')."\nTanggal settlement: {$sale->tanggal->format('d-m-Y')}\n\nTerima kasih.";
+
+                return ['name' => $nasabah->nama, 'url' => "https://wa.me/{$phone}?text=".urlencode($message)];
+            })->values()->all();
+
+        return redirect()->route('stok.index')
+            ->with('success', 'Penjualan dan settlement FIFO berhasil diproses secara atomic.')
+            ->with('settlement_wa', $waLinks);
     }
 }

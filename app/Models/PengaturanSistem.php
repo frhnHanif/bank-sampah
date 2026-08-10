@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PengaturanSistem extends Model
 {
     protected $table = 'pengaturan_sistem';
+
     protected $guarded = ['id'];
 
     /**
@@ -15,6 +16,7 @@ class PengaturanSistem extends Model
     public static function ambil(string $kunci, float $default = 0): float
     {
         $item = static::where('kunci', $kunci)->first();
+
         return $item ? (float) $item->nilai : $default;
     }
 
@@ -24,6 +26,7 @@ class PengaturanSistem extends Model
     public static function ambilString(string $kunci, string $default = ''): string
     {
         $item = static::where('kunci', $kunci)->first();
+
         return $item ? (string) $item->nilai : $default;
     }
 }

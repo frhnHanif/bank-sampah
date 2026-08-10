@@ -106,7 +106,7 @@
             <td>: {{ $nasabah->kode }}</td>
             <td rowspan="4">
                 <div class="saldo-box text-right">
-                    <h3>TOTAL SALDO AKTIF</h3>
+                    <h3>SALDO TERSEDIA</h3>
                     <p>Rp {{ number_format($nasabah->tabungan ? $nasabah->tabungan->saldo_saat_ini : 0, 0, ',', '.') }}</p>
                 </div>
             </td>
@@ -123,6 +123,17 @@
             <td>No. HP</td>
             <td>: {{ $nasabah->no_hp ?? '-' }}</td>
         </tr>
+    </table>
+
+    <h3 style="font-size: 12px; margin: 18px 0 6px;">STATUS SETORAN FLOW BARU</h3>
+    <table class="mutasi-table">
+        <thead><tr><th>Tanggal Setor</th><th>Jenis</th><th class="text-right">Setor</th><th class="text-right">Terjual</th><th class="text-right">Sisa</th><th>Status / Nilai</th></tr></thead>
+        <tbody>
+        @forelse($setoranItems as $item)
+            @php $pending=max(0,(float)$item->berat_kg-(float)$item->berat_teralokasi_kg); $realized=$item->alokasi->sum(fn($a)=>(float)$a->nilai_hak_nasabah); @endphp
+            <tr><td>{{ $item->transaksi->tanggal->format('d/m/Y') }}</td><td>{{ $item->kategori?->nama ?? 'Kategori nonaktif' }}</td><td class="text-right">{{ number_format($item->berat_kg,2,',','.') }} kg</td><td class="text-right">{{ number_format($item->berat_teralokasi_kg,2,',','.') }} kg</td><td class="text-right">{{ number_format($pending,2,',','.') }} kg</td><td>{{ $item->status->value }}<br>{{ $realized>0?'Rp '.number_format($realized,0,',','.'):'Nilai belum ditentukan' }}</td></tr>
+        @empty <tr><td colspan="6" class="text-center">Belum ada setoran flow baru.</td></tr> @endforelse
+        </tbody>
     </table>
 
     <table class="mutasi-table">
@@ -143,6 +154,8 @@
                 $tglFormat = $tgl->day . ' ' . $bulanSingkat[$tgl->month - 1] . ' ' . $tgl->year;
                 $isKredit = $m->jenis == 'kredit';
                 $items = $isKredit && $m->transaksiSetor ? $m->transaksiSetor->items : null;
+                $isSettlement = $isKredit && $m->ref_transaksi_jual_id;
+                $settlementAllocations = $isSettlement ? $m->transaksiJual->items->flatMap->alokasi->filter(fn($a) => $a->itemSetor?->transaksi?->nasabah_id === $nasabah->id) : collect();
             @endphp
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
@@ -155,6 +168,9 @@
                         <li>{{ $item->kategori ? $item->kategori->nama : '—' }} — {{ number_format($item->berat_kg, 2, ',', '.') }} kg &times; Rp {{ number_format($item->nilai, 0, ',', '.') }}</li>
                         @endforeach
                     </ul>
+                    @endif
+                    @if($isSettlement && $settlementAllocations->count())
+                    <ul class="item-list">@foreach($settlementAllocations as $allocation)<li>{{ $allocation->itemSetor->kategori?->nama }} - {{ number_format($allocation->berat_kg,2,',','.') }} kg @ Rp {{ number_format($allocation->harga_nasabah_per_kg,0,',','.') }}/kg</li>@endforeach</ul>
                     @endif
                 </td>
                 <td class="text-right cr">{{ $isKredit ? 'Rp ' . number_format($m->jumlah, 0, ',', '.') : '-' }}</td>

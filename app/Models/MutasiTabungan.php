@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class MutasiTabungan extends Model
 {
     protected $table = 'mutasi_tabungan';
+
     protected $guarded = ['id'];
 
     public function nasabah()
@@ -17,5 +18,10 @@ class MutasiTabungan extends Model
     public function transaksiSetor()
     {
         return $this->belongsTo(TransaksiSetor::class, 'ref_transaksi_setor_id');
+    }
+
+    public function transaksiJual()
+    {
+        return $this->belongsTo(TransaksiJual::class, 'ref_transaksi_jual_id');
     }
 }

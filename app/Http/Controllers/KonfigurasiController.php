@@ -30,6 +30,7 @@ class KonfigurasiController extends Controller
 
         if ($request->pin === $pinTersimpan) {
             session(['admin_authenticated' => true]);
+
             return redirect()->route('konfigurasi.index');
         }
 
@@ -43,6 +44,7 @@ class KonfigurasiController extends Controller
     public function logoutPin()
     {
         session()->forget('admin_authenticated');
+
         return redirect()->route('konfigurasi.pin')
             ->with('pin_error', null);
     }
@@ -98,14 +100,14 @@ class KonfigurasiController extends Controller
         ]);
 
         return redirect()->route('konfigurasi.index')
-            ->with('success', 'Akun pengurus ' . $validated['name'] . ' berhasil ditambahkan.');
+            ->with('success', 'Akun pengurus '.$validated['name'].' berhasil ditambahkan.');
     }
 
     public function updateUser(Request $request, User $user)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'email', 'unique:users,email,'.$user->id],
         ]);
 
         $user->update($validated);
@@ -116,7 +118,7 @@ class KonfigurasiController extends Controller
         }
 
         return redirect()->route('konfigurasi.index')
-            ->with('success', 'Akun ' . $user->name . ' berhasil diperbarui.');
+            ->with('success', 'Akun '.$user->name.' berhasil diperbarui.');
     }
 
     public function destroyUser(User $user)
@@ -131,6 +133,6 @@ class KonfigurasiController extends Controller
         $user->delete();
 
         return redirect()->route('konfigurasi.index')
-            ->with('success', 'Akun pengurus ' . $nama . ' berhasil dihapus.');
+            ->with('success', 'Akun pengurus '.$nama.' berhasil dihapus.');
     }
 }

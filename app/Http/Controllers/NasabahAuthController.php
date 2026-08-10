@@ -46,10 +46,10 @@ class NasabahAuthController extends Controller
     public function cek(Request $request)
     {
         $request->validate([
-            'kode'  => ['required', 'string', 'max:50'],
+            'kode' => ['required', 'string', 'max:50'],
             'no_hp' => ['required', 'string', 'max:30'],
         ], [
-            'kode.required'  => 'ID / Kode nasabah wajib diisi.',
+            'kode.required' => 'ID / Kode nasabah wajib diisi.',
             'no_hp.required' => 'Nomor HP / WhatsApp wajib diisi.',
         ]);
 
@@ -65,9 +65,9 @@ class NasabahAuthController extends Controller
 
         // Simpan sesi nasabah
         session([
-            'nasabah_id'       => $nasabah->id,
-            'nasabah_kode'     => $nasabah->kode,
-            'nasabah_nama'     => $nasabah->nama,
+            'nasabah_id' => $nasabah->id,
+            'nasabah_kode' => $nasabah->kode,
+            'nasabah_nama' => $nasabah->nama,
             'nasabah_login_at' => time(),
         ]);
 
@@ -80,6 +80,7 @@ class NasabahAuthController extends Controller
     public function logout()
     {
         session()->forget(['nasabah_id', 'nasabah_kode', 'nasabah_nama', 'nasabah_login_at']);
+
         return redirect()->route('nasabah.login')->with('success', 'Anda telah keluar dari cek rekening.');
     }
 }

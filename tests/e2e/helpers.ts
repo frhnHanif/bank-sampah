@@ -17,5 +17,4 @@ export async function loginAsAdmin(page: Page, targetPath: string = '/') {
   }
 
   await page.goto(targetPath);
-  await page.waitForLoadState('networkidle');
 }

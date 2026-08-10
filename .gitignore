@@ -15,6 +15,11 @@ docker-compose.yml
 /.zed
 /auth.json
 /node_modules
+/.npm-cache
+/.tools
+/playwright-report
+/test-results
+/tests/e2e/.auth
 /public/build
 /public/fonts-manifest.dev.json
 /public/hot
@@ -27,3 +32,4 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 Cpanel.txt
+prompt.md

@@ -14,7 +14,7 @@
     </div>
 
     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Ringkasan Keseluruhan</p>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
         
         <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
             <p class="text-xs font-bold text-gray-500 mb-1">Total sampah terkumpul</p>
@@ -28,11 +28,20 @@
             </p>
         </div>
 
+        <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+            <p class="text-xs font-bold text-gray-500 mb-1">Sampah tersalurkan</p>
+            <div class="flex items-baseline gap-1">
+                <h3 class="text-2xl font-black text-blue-700">{{ number_format($totalTersalurkan, 2, ',', '.') }}</h3>
+                <span class="text-sm font-bold text-gray-400">kg</span>
+            </div>
+            <p class="text-[10px] font-bold mt-2 text-gray-400">Berdasarkan transaksi penjualan</p>
+        </div>
+
         <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 shadow-sm">
-            <p class="text-xs font-black text-emerald-700 mb-1">Reduksi emisi CO₂</p>
+            <p class="text-xs font-black text-emerald-700 mb-1">Estimasi Reduksi Emisi</p>
             <div class="flex items-baseline gap-1">
                 <h3 class="text-2xl font-black text-emerald-700">{{ number_format($totalCO2, 0, ',', '.') }}</h3>
-                <span class="text-sm font-bold text-emerald-600/70">kg</span>
+                <span class="text-sm font-bold text-emerald-600/70">kgCO₂e</span>
             </div>
             <p class="text-[10px] font-bold mt-2 flex items-center gap-1 {{ $trenCO2 >= 0 ? 'text-emerald-600' : 'text-red-500' }}">
                 <i class="fa-solid {{ $trenCO2 >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down' }}"></i>
@@ -41,13 +50,12 @@
         </div>
 
         <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-            <p class="text-xs font-bold text-gray-500 mb-1">Nilai ekonomi</p>
+            <p class="text-xs font-bold text-gray-500 mb-1">Menunggu penjualan</p>
             <div class="flex items-baseline gap-1">
-                <span class="text-sm font-bold text-gray-400">Rp</span>
-                <h3 class="text-2xl font-black text-gray-800">{{ number_format($nilaiEkonomi/1000000, 1, ',', '.') }}</h3>
-                <span class="text-sm font-bold text-gray-400">jt</span>
+                <h3 class="text-2xl font-black text-amber-700">{{ number_format($pendingWeight, 2, ',', '.') }}</h3>
+                <span class="text-sm font-bold text-gray-400">kg</span>
             </div>
-            <p class="text-[10px] font-bold mt-2 text-gray-400">Akumulasi seluruh periode</p>
+            <p class="text-[10px] font-bold mt-2 text-amber-600">{{ number_format($unclassifiedWeight, 2, ',', '.') }} kg terjual menunggu klasifikasi emisi</p>
         </div>
 
         <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
@@ -58,6 +66,10 @@
             </div>
             <p class="text-[10px] font-bold mt-2 text-gray-400">dari {{ $totalNasabah }} terdaftar</p>
         </div>
+    </div>
+
+    <div class="bg-sky-50 border border-sky-200 text-sky-800 rounded-xl px-4 py-3 text-xs mb-8">
+        Estimasi kgCO₂e flow baru diakui pada tanggal penjualan dan memakai snapshot faktor. Histori sebelum cutover tetap memakai metode legacy setoran.
     </div>
 
     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Target & Dampak CO₂ — Fokus CSR</p>

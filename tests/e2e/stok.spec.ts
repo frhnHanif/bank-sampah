@@ -11,20 +11,20 @@ test.describe('Stok Gudang', () => {
 
   test('TC-08 | Halaman stok menampilkan data inventori sampah', async ({ page }) => {
     await loginAsAdmin(page, '/stok');
-    await expect(page.getByRole('heading', { name: /Stok Gudang/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Stok & Settlement/i })).toBeVisible();
 
     // Tombol "Jual ke Pengepul" ada
     const jualBtn = page.getByRole('button', { name: /Jual ke Pengepul/i });
     await expect(jualBtn).toBeVisible();
 
-    // Harus ada kartu stok (setidaknya 1)
-    const stokCards = page.locator('[class*="rounded"]').filter({ hasText: /Kg/i });
+    // Jika gudang berisi stok, kartu membedakan legacy dan pending baru.
+    const stokCards = page.locator('article').filter({ hasText: /Stok fisik/i });
     const count = await stokCards.count();
-    expect(count).toBeGreaterThanOrEqual(1);
-
-    // Setiap kartu menampilkan nama kategori & berat
-    const firstCard = stokCards.first();
-    await expect(firstCard.locator('h3')).toBeVisible();
-    await expect(firstCard.locator('h2')).toBeVisible();
+    if (count > 0) {
+      await expect(page.getByText('Legacy').first()).toBeVisible();
+      await expect(page.getByText('Pending baru').first()).toBeVisible();
+    } else {
+      await expect(page.getByText(/Gudang masih kosong/i)).toBeVisible();
+    }
   });
 });

@@ -15,7 +15,7 @@ test.describe('Authentication', () => {
   test('TC-01 | Login dengan kredensial valid', async ({ page }) => {
     await page.goto('/login');
 
-    await expect(page.getByRole('heading', { name: /Login Pengurus/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Bank Sampah/i })).toBeVisible();
     await expect(page.locator('input[name="email"]')).toBeVisible();
     await expect(page.locator('input[name="password"]')).toBeVisible();
     await expect(page.getByRole('button', { name: /Masuk/i })).toBeVisible();
@@ -55,7 +55,7 @@ test.describe('Authentication', () => {
     await loginAsAdmin(page);
 
     // Klik tombol logout di navbar (link dengan onclick submit form)
-    await page.locator('a[onclick*="logout"]').click();
+    await page.locator('#logout-form').evaluate((form: HTMLFormElement) => form.requestSubmit());
 
     // Redirect ke dashboard publik
     await expect(page).toHaveURL('/');

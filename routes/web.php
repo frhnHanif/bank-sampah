@@ -1,17 +1,18 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController; 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FaktorEmisiController;
 use App\Http\Controllers\KategoriSampahController;
-use App\Http\Controllers\NasabahController;
-use App\Http\Controllers\TransaksiSetorController;
-use App\Http\Controllers\TabunganController;
-use App\Http\Controllers\StokController;
-use App\Http\Controllers\TransaksiJualController;
 use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\KonfigurasiController;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NasabahAuthController;
+use App\Http\Controllers\NasabahController;
+use App\Http\Controllers\StokController;
+use App\Http\Controllers\TabunganController;
+use App\Http\Controllers\TransaksiJualController;
+use App\Http\Controllers\TransaksiSetorController;
+use Illuminate\Support\Facades\Route;
 
 // ─── PUBLIC ───────────────────────────────────────────────────
 
@@ -41,11 +42,12 @@ Route::middleware('nasabah.access')->group(function () {
 
 Route::middleware('auth')->group(function () {
 
-    Route::resource('kategori', KategoriSampahController::class);
-    Route::resource('nasabah', NasabahController::class);
-    Route::resource('setor', TransaksiSetorController::class);
+    Route::resource('kategori', KategoriSampahController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::post('/kategori/quick-create', [KategoriSampahController::class, 'quickStore'])->name('kategori.quick-store');
+    Route::resource('nasabah', NasabahController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('setor', TransaksiSetorController::class)->only(['index', 'create', 'store']);
     Route::post('/nasabah/{id}/tabungan/tarik', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
-    Route::get('/nasabah/{id}/id-card', [App\Http\Controllers\TabunganController::class, 'generateIdCard'])->name('tabungan.idcard');
+    Route::get('/nasabah/{id}/id-card', [TabunganController::class, 'generateIdCard'])->name('tabungan.idcard');
     Route::get('/stok', [StokController::class, 'index'])->name('stok.index');
     Route::get('/jual', [TransaksiJualController::class, 'create'])->name('jual.create');
     Route::post('/jual', [TransaksiJualController::class, 'store'])->name('jual.store');
@@ -59,6 +61,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/konfigurasi/pin/logout', [KonfigurasiController::class, 'logoutPin'])->name('konfigurasi.pin.logout');
 
     Route::middleware('admin.pin')->group(function () {
+        Route::get('/faktor-emisi', [FaktorEmisiController::class, 'index'])->name('faktor-emisi.index');
+        Route::post('/faktor-emisi', [FaktorEmisiController::class, 'store'])->name('faktor-emisi.store');
+        Route::put('/faktor-emisi/{faktorEmisi}', [FaktorEmisiController::class, 'update'])->name('faktor-emisi.update');
+        Route::patch('/faktor-emisi/{faktorEmisi}/toggle', [FaktorEmisiController::class, 'toggle'])->name('faktor-emisi.toggle');
         Route::get('/konfigurasi', [KonfigurasiController::class, 'index'])->name('konfigurasi.index');
         Route::put('/konfigurasi/settings', [KonfigurasiController::class, 'updateSettings'])->name('konfigurasi.settings.update');
         Route::post('/konfigurasi/users', [KonfigurasiController::class, 'storeUser'])->name('konfigurasi.users.store');

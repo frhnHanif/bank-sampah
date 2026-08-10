@@ -101,7 +101,7 @@
             <td>: Keseluruhan</td>
             <td rowspan="3">
                 <div class="saldo-box text-right">
-                    <h3>TOTAL SALDO KAS</h3>
+                    <h3>KAS AKTUAL</h3>
                     <p>Rp {{ number_format($saldoKas, 0, ',', '.') }}</p>
                 </div>
             </td>
@@ -114,6 +114,13 @@
             <td>Total Pengeluaran</td>
             <td>: Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</td>
         </tr>
+        <tr><td>Penjualan Pengepul</td><td>: Rp {{ number_format($totalPenjualanPengepul,0,',','.') }}</td></tr>
+        <tr><td>Kewajiban Tabungan</td><td>: Rp {{ number_format($totalRekeningWarga,0,',','.') }}</td></tr>
+        <tr><td>Cost Basis Terealisasi</td><td>: Rp {{ number_format($cogsTerjual,0,',','.') }}</td></tr>
+        <tr><td>Margin Kotor Terealisasi</td><td>: Rp {{ number_format($totalMarginKotor,0,',','.') }}</td></tr>
+        <tr><td>Biaya Operasional</td><td>: Rp {{ number_format($totalOperasional,0,',','.') }}</td></tr>
+        <tr><td>Laba Setelah Operasional</td><td>: Rp {{ number_format($labaSetelahOperasional,0,',','.') }}</td></tr>
+        <tr><td>Kas Setelah Kewajiban*</td><td>: Rp {{ number_format($kasSetelahKewajiban,0,',','.') }} (*bukan otomatis profit)</td></tr>
     </table>
 
     <table class="mutasi-table">

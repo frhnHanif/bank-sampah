@@ -10,8 +10,20 @@ class KategoriSampah extends Model
     use SoftDeletes;
 
     protected $table = 'kategori_sampah';
+
     protected $guarded = ['id'];
+
     protected $dates = ['deleted_at'];
+
+    protected function casts(): array
+    {
+        return ['faktor_emisi_id' => 'integer'];
+    }
+
+    public function faktorEmisi()
+    {
+        return $this->belongsTo(FaktorEmisi::class);
+    }
 
     public function stok()
     {
@@ -26,5 +38,10 @@ class KategoriSampah extends Model
     public function itemJual()
     {
         return $this->hasMany(ItemJual::class, 'kategori_id');
+    }
+
+    public function legacyInventory()
+    {
+        return $this->hasMany(LegacyInventory::class, 'kategori_id');
     }
 }
