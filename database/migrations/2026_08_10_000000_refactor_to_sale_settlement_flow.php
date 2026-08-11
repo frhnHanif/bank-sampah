@@ -33,15 +33,27 @@ return new class extends Migration
                 ->constrained('faktor_emisi')->nullOnDelete();
         });
 
-        // Setiap faktor lama dipreservasi sebagai record tersendiri. Tidak ada angka
-        // ilmiah baru yang dibuat dan tidak ada kategori yang disimpulkan setara.
-        DB::table('kategori_sampah')->orderBy('id')->get()->each(function ($kategori): void {
+        $materialGroup = static function (string $name): string {
+            $name = Str::lower($name);
+
+            return match (true) {
+                str_contains($name, 'kaca') => 'Kaca',
+                str_contains($name, 'kaleng') => 'Kaleng',
+                str_contains($name, 'kertas') && preg_match('/kardus|karton|tebal/', $name) => 'Kertas Tebal',
+                str_contains($name, 'kertas') => 'Kertas Tipis',
+                str_contains($name, 'plastik') && preg_match('/tumbler|botol|ember|galon|tebal/', $name) => 'Plastik Tebal',
+                str_contains($name, 'plastik') => 'Plastik Tipis',
+                default => Str::title($name),
+            };
+        };
+
+        DB::table('kategori_sampah')->orderBy('id')->get()->each(function ($kategori) use ($materialGroup): void {
             $normalized = Str::lower(preg_replace('/\s+/u', ' ', trim($kategori->nama)) ?? trim($kategori->nama));
             $factorId = DB::table('faktor_emisi')->insertGetId([
-                'nama_material' => 'Faktor legacy - '.$kategori->nama,
+                'nama_material' => $materialGroup($kategori->nama),
                 'faktor_kgco2e_per_kg' => $kategori->faktor_emisi,
                 'sumber' => 'Migrasi data lama - sumber belum didokumentasikan',
-                'versi' => 'legacy-cutover-2026-08-10',
+                'versi' => null,
                 'catatan' => 'Nilai dipreservasi persis dari kategori_sampah.faktor_emisi.',
                 'aktif' => true,
                 'created_at' => now(),

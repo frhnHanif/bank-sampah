@@ -227,6 +227,29 @@ class SettlementFlowTest extends TestCase
         $this->assertFalse($category->fresh()->trashed());
     }
 
+    public function test_emission_factor_accepts_at_most_three_decimal_places_and_shows_common_templates(): void
+    {
+        $this->withoutMiddleware();
+
+        $this->post(route('faktor-emisi.store'), [
+            'nama_material' => 'Kaca',
+            'faktor_kgco2e_per_kg' => '1.234',
+            'aktif' => true,
+        ])->assertSessionHasNoErrors();
+
+        $this->post(route('faktor-emisi.store'), [
+            'nama_material' => 'Plastik Tebal',
+            'faktor_kgco2e_per_kg' => '1.2345',
+            'aktif' => true,
+        ])->assertSessionHasErrors('faktor_kgco2e_per_kg');
+
+        $this->get(route('faktor-emisi.index'))
+            ->assertOk()
+            ->assertSeeInOrder(['Kaca', 'Plastik Tebal', 'Plastik Tipis', 'Kaleng', 'Kertas Tebal', 'Kertas Tipis'])
+            ->assertSee('1,234')
+            ->assertDontSee('legacy', false);
+    }
+
     public function test_inventory_and_balance_audit_passes_after_normal_flow(): void
     {
         $customer = $this->customer('A');

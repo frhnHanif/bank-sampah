@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ItemSetor;
+use App\Models\ItemJual;
 use App\Models\LegacyInventory;
 use App\Models\Stok;
 
@@ -19,15 +20,17 @@ class StokController extends Controller
         $pending = ItemSetor::where('is_legacy', false)
             ->selectRaw('kategori_id, SUM(berat_kg - berat_teralokasi_kg) AS berat')
             ->groupBy('kategori_id')->pluck('berat', 'kategori_id');
+        $sold = ItemJual::selectRaw('kategori_id, SUM(berat_kg) AS berat')
+            ->groupBy('kategori_id')->pluck('berat', 'kategori_id');
         $stockData = $stok->map(fn ($row) => [
             'id' => $row->kategori_id,
             'name' => $row->kategori?->nama,
             'stock' => (float) $row->total_berat_kg,
-            'legacy' => (float) ($legacy[$row->kategori_id] ?? 0),
-            'pending' => (float) ($pending[$row->kategori_id] ?? 0),
-            'legacyCost' => (float) ($legacyCost[$row->kategori_id] ?? 0),
+            'alreadyCredited' => (float) ($legacy[$row->kategori_id] ?? 0),
+            'awaitingSale' => (float) ($pending[$row->kategori_id] ?? 0),
+            'alreadyCreditedCost' => (float) ($legacyCost[$row->kategori_id] ?? 0),
         ])->values();
 
-        return view('stok.index', compact('stok', 'legacy', 'legacyCost', 'pending', 'stockData'));
+        return view('stok.index', compact('stok', 'sold', 'stockData'));
     }
 }

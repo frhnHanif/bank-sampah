@@ -125,16 +125,18 @@
         </tr>
     </table>
 
-    <h3 style="font-size: 12px; margin: 18px 0 6px;">STATUS SETORAN FLOW BARU</h3>
+    @if($setoranItems->isNotEmpty())
+    <h3 style="font-size: 12px; margin: 18px 0 6px;">SETORAN YANG BELUM TERJUAL</h3>
     <table class="mutasi-table">
         <thead><tr><th>Tanggal Setor</th><th>Jenis</th><th class="text-right">Setor</th><th class="text-right">Terjual</th><th class="text-right">Sisa</th><th>Status / Nilai</th></tr></thead>
         <tbody>
-        @forelse($setoranItems as $item)
+        @foreach($setoranItems as $item)
             @php $pending=max(0,(float)$item->berat_kg-(float)$item->berat_teralokasi_kg); $realized=$item->alokasi->sum(fn($a)=>(float)$a->nilai_hak_nasabah); @endphp
             <tr><td>{{ $item->transaksi->tanggal->format('d/m/Y') }}</td><td>{{ $item->kategori?->nama ?? 'Kategori nonaktif' }}</td><td class="text-right">{{ number_format($item->berat_kg,2,',','.') }} kg</td><td class="text-right">{{ number_format($item->berat_teralokasi_kg,2,',','.') }} kg</td><td class="text-right">{{ number_format($pending,2,',','.') }} kg</td><td>{{ $item->status->value }}<br>{{ $realized>0?'Rp '.number_format($realized,0,',','.'):'Nilai belum ditentukan' }}</td></tr>
-        @empty <tr><td colspan="6" class="text-center">Belum ada setoran flow baru.</td></tr> @endforelse
+        @endforeach
         </tbody>
     </table>
+    @endif
 
     <table class="mutasi-table">
         <thead>
@@ -161,7 +163,7 @@
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td>{{ $tglFormat }}</td>
                 <td>
-                    {{ $m->keterangan }}
+                    {{ $isKredit ? 'Uang masuk dari hasil penjualan sampah' : $m->keterangan }}
                     @if($isKredit && $items && $items->count())
                     <ul class="item-list">
                         @foreach($items as $item)

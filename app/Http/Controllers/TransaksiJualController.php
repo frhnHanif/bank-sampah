@@ -68,7 +68,7 @@ class TransaksiJualController extends Controller
             })->values()->all();
 
         return redirect()->route('stok.index')
-            ->with('success', 'Penjualan dan settlement FIFO berhasil diproses secara atomic.')
+            ->with('success', 'Penjualan ke Pengepul berhasil dicatat.')
             ->with('settlement_wa', $waLinks);
     }
 }

@@ -43,7 +43,7 @@ class FaktorEmisiController extends Controller
     {
         return $request->validate([
             'nama_material' => ['required', 'string', 'max:255'],
-            'faktor_kgco2e_per_kg' => ['required', 'numeric', 'min:0'],
+            'faktor_kgco2e_per_kg' => ['required', 'numeric', 'decimal:0,3', 'min:0'],
             'sumber' => ['nullable', 'string'],
             'versi' => ['nullable', 'string', 'max:255'],
             'tanggal_berlaku' => ['nullable', 'date'],

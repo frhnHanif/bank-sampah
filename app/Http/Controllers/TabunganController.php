@@ -46,6 +46,7 @@ class TabunganController extends Controller
 
         $setoranItems = ItemSetor::with(['kategori', 'transaksi', 'alokasi.itemJual.transaksi'])
             ->where('is_legacy', false)
+            ->whereIn('status', ['PENDING', 'PARTIAL'])
             ->whereHas('transaksi', fn ($query) => $query->where('nasabah_id', $id))
             ->orderByDesc('id')->get();
 
@@ -163,6 +164,7 @@ class TabunganController extends Controller
 
         $setoranItems = ItemSetor::with(['kategori', 'transaksi', 'alokasi.itemJual.transaksi'])
             ->where('is_legacy', false)
+            ->whereIn('status', ['PENDING', 'PARTIAL'])
             ->whereHas('transaksi', fn ($query) => $query->where('nasabah_id', $id))
             ->orderByDesc('id')->get();
 

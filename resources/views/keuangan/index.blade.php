@@ -48,10 +48,23 @@
 
 </div>
 
-<div class="grid sm:grid-cols-3 gap-3 mb-8 text-sm">
-    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4"><span class="text-amber-700">Margin kotor terealisasi</span><strong data-testid="metric-gross-margin" class="block text-lg">Rp {{ number_format($totalMarginKotor,0,',','.') }}</strong></div>
-    <div class="bg-red-50 border border-red-200 rounded-xl p-4"><span class="text-red-700">Biaya operasional</span><strong data-testid="metric-operational" class="block text-lg">Rp {{ number_format($totalOperasional,0,',','.') }}</strong></div>
-    <div class="bg-sky-50 border border-sky-200 rounded-xl p-4"><span class="text-sky-700">Kas setelah kewajiban tabungan*</span><strong data-testid="metric-cash-after-liability" class="block text-lg">Rp {{ number_format($kasSetelahKewajiban,0,',','.') }}</strong><small class="text-gray-500">*Bukan otomatis profit</small></div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+        <p class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Margin Kotor Terealisasi</p>
+        <h2 data-testid="metric-gross-margin" class="text-2xl font-bold text-gray-700">Rp {{ number_format($totalMarginKotor,0,',','.') }}</h2>
+    </div>
+    <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-red-400"></div>
+        <p class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Biaya Operasional</p>
+        <h2 data-testid="metric-operational" class="text-2xl font-bold text-gray-700">Rp {{ number_format($totalOperasional,0,',','.') }}</h2>
+    </div>
+    <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+        <p class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Kas Setelah Kewajiban Tabungan</p>
+        <h2 data-testid="metric-cash-after-liability" class="text-2xl font-black text-blue-600">Rp {{ number_format($kasSetelahKewajiban,0,',','.') }}</h2>
+        <p class="text-[10px] text-gray-400 mt-2">*Bukan otomatis profit</p>
+    </div>
 </div>
 
 <div class="bg-white shadow-sm border border-gray-100 rounded-2xl">

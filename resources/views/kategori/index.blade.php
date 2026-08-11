@@ -13,8 +13,14 @@
     @forelse($kategori as $item)
         <article class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
             <div class="flex items-start gap-3"><span class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center"><i class="fa-solid fa-recycle"></i></span><div class="flex-1"><h2 class="font-black text-gray-800">{{ $item->nama }}</h2><p class="text-xs text-gray-400 mt-1">Key: {{ $item->nama_normalized }}</p></div></div>
-            <div class="mt-4 p-3 rounded-xl {{ $item->faktorEmisi ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800' }}"><span class="text-[10px] uppercase font-black">Kelompok faktor emisi</span><strong class="block text-sm">{{ $item->faktorEmisi?->nama_material ?? 'Belum diklasifikasikan' }}</strong></div>
-            <div class="flex gap-2 mt-4"><button onclick='openEdit(@json(["id"=>$item->id,"name"=>$item->nama,"factor"=>$item->faktor_emisi_id]))' class="flex-1 bg-gray-100 rounded-xl py-2.5 font-bold text-sm">Edit</button><form action="{{ route('kategori.destroy',$item) }}" method="POST" onsubmit="return confirm('Nonaktifkan jenis ini?')">@csrf @method('DELETE')<button class="bg-red-50 text-red-600 rounded-xl px-4 py-2.5"><i class="fa-solid fa-ban"></i></button></form></div>
+            <div class="mt-4">
+                @if($item->faktorEmisi)
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700"><i class="fa-solid fa-leaf"></i>{{ rtrim(rtrim(number_format($item->faktorEmisi->faktor_kgco2e_per_kg, 3, ',', '.'), '0'), ',') }} kgCO₂e/kg</span>
+                @else
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600"><i class="fa-solid fa-circle-exclamation"></i>Faktor emisi kosong</span>
+                @endif
+            </div>
+            <div class="flex gap-2 mt-4"><button onclick='openEdit(@json(["id"=>$item->id,"name"=>$item->nama,"factor"=>$item->faktor_emisi_id]))' class="flex-1 bg-gray-100 rounded-xl py-2.5 font-bold text-sm">Edit</button><form action="{{ route('kategori.destroy',$item) }}" method="POST" class="shrink-0" onsubmit="return confirm('Nonaktifkan jenis ini?')">@csrf @method('DELETE')<button class="w-11 h-11 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors" title="Nonaktifkan"><i class="fa-solid fa-trash-can"></i></button></form></div>
         </article>
     @empty <div class="col-span-full bg-white border rounded-2xl p-10 text-center text-gray-500">Belum ada jenis sampah.</div> @endforelse
     </div>

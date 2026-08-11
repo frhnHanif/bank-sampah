@@ -68,9 +68,9 @@
         </div>
     </div>
 
-    <div class="bg-sky-50 border border-sky-200 text-sky-800 rounded-xl px-4 py-3 text-xs mb-8">
+    <!-- <div class="bg-sky-50 border border-sky-200 text-sky-800 rounded-xl px-4 py-3 text-xs mb-8">
         Estimasi kgCO₂e flow baru diakui pada tanggal penjualan dan memakai snapshot faktor. Histori sebelum cutover tetap memakai metode legacy setoran.
-    </div>
+    </div> -->
 
     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Target & Dampak CO₂ — Fokus CSR</p>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
