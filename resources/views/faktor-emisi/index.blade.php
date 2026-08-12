@@ -18,7 +18,19 @@
 
 <div id="factorModal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-gray-900/50 p-4 overflow-y-auto"><form id="factorForm" method="POST" class="bg-white rounded-2xl p-6 w-full max-w-xl my-auto">@csrf<input id="factorMethod" type="hidden" name="_method" value="POST"><h2 id="factorTitle" class="font-black text-xl">Tambah Faktor</h2><div class="grid sm:grid-cols-2 gap-4 mt-5"><div><label class="text-xs font-black text-gray-400 uppercase">Nama material</label><input id="factorName" name="nama_material" required placeholder="Contoh: Kaca" class="mt-2 w-full border rounded-xl px-4 py-3"><div class="flex flex-wrap gap-1.5 mt-2" aria-label="Contoh kategori umum">@foreach(['Kaca', 'Plastik Tebal', 'Plastik Tipis', 'Kaleng', 'Kertas Tebal', 'Kertas Tipis'] as $example)<button type="button" onclick="factorName.value=@js($example)" class="text-xs bg-emerald-50 text-emerald-700 rounded-full px-2.5 py-1 hover:bg-emerald-100">{{ $example }}</button>@endforeach</div><p class="text-xs text-gray-500 mt-2">Buat faktor umum agar jenis baru seperti botol kaca atau tumbler plastik dapat memakai kelompok yang sesuai.</p></div><div><label class="text-xs font-black text-gray-400 uppercase">Faktor kgCO₂e/kg</label><input id="factorValue" name="faktor_kgco2e_per_kg" type="number" min="0" step="0.001" placeholder="Contoh: 1,234" required class="mt-2 w-full border rounded-xl px-4 py-3"><p class="text-xs text-gray-500 mt-2">Maksimal 3 angka di belakang koma.</p></div><div><label class="text-xs font-black text-gray-400 uppercase">Versi</label><input id="factorVersion" name="versi" class="mt-2 w-full border rounded-xl px-4 py-3"></div><div><label class="text-xs font-black text-gray-400 uppercase">Tanggal berlaku</label><input id="factorDate" name="tanggal_berlaku" type="date" class="mt-2 w-full border rounded-xl px-4 py-3"></div></div><label class="block text-xs font-black text-gray-400 uppercase mt-4">Sumber</label><textarea id="factorSource" name="sumber" class="mt-2 w-full border rounded-xl px-4 py-3" rows="2"></textarea><label class="block text-xs font-black text-gray-400 uppercase mt-4">Catatan</label><textarea id="factorNotes" name="catatan" class="mt-2 w-full border rounded-xl px-4 py-3" rows="2"></textarea><input type="hidden" name="aktif" value="1"><div class="flex gap-3 mt-6"><button type="button" onclick="closeFactor()" class="flex-1 bg-gray-100 rounded-xl py-3 font-bold">Batal</button><button class="flex-1 bg-emerald-600 text-white rounded-xl py-3 font-bold">Simpan</button></div></form></div>
 @push('scripts')<script>
-function openFactor(item=null){factorTitle.textContent=item?'Edit Faktor':'Tambah Faktor';factorForm.action=item?@json(url('/faktor-emisi'))+'/'+item.id:@json(route('faktor-emisi.store'));factorMethod.value=item?'PUT':'POST';factorName.value=item?.nama_material||'';factorValue.value=item?Number(item.faktor_kgco2e_per_kg).toFixed(3).replace(/\.?0+$/,''):'';factorVersion.value=item?.versi||'';factorDate.value=item?.tanggal_berlaku?.substring(0,10)||'';factorSource.value=item?.sumber||'';factorNotes.value=item?.catatan||'';factorModal.classList.remove('hidden');factorModal.classList.add('flex');}
+function openFactor(item=null) {
+    factorTitle.textContent=item?'Edit Faktor':'Tambah Faktor';
+    factorForm.action=item?@json(url('/faktor-emisi'))+'/'+item.id:@json(route('faktor-emisi.store'));
+    factorMethod.value=item?'PUT':'POST';
+    factorName.value=item?.nama_material||'';
+    factorValue.value=item?Number(item.faktor_kgco2e_per_kg).toFixed(3).replace(/\.?0+$/,''):'';
+    factorVersion.value=item?.versi||'';
+    factorDate.value=item?.tanggal_berlaku?.substring(0,10)||'';
+    factorSource.value=item?.sumber||'';
+    factorNotes.value=item?.catatan||'';
+    factorModal.classList.remove('hidden');
+    factorModal.classList.add('flex');
+}
 function closeFactor(){factorModal.classList.add('hidden');factorModal.classList.remove('flex');}
 </script>@endpush
 @endsection

@@ -6,7 +6,7 @@
         <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Data Nasabah</h1>
         <p class="text-sm text-gray-500">Kelola informasi warga yang terdaftar sebagai nasabah bank sampah.</p>
     </div>
-    <button type="button" onclick="bukaModalCreate()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-emerald-700 transition shadow-sm flex items-center gap-2 w-full sm:w-auto justify-center">
+    <button type="button" onclick="bukaModalCreate()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition shadow-sm flex items-center gap-2 w-full sm:w-auto justify-center">
         <i class="fa-solid fa-user-plus"></i> Tambah Nasabah
     </button>
 </div>
@@ -87,7 +87,7 @@
         </div>
         <h3 class="text-lg font-bold text-gray-700">Belum ada nasabah terdaftar</h3>
         <p class="text-gray-500 mt-1 mb-6">Silakan daftarkan warga sebagai nasabah baru untuk memulai transaksi.</p>
-        <button type="button" onclick="bukaModalCreate()" class="bg-emerald-100 text-emerald-700 px-6 py-2.5 rounded-full font-bold hover:bg-emerald-200 transition">
+        <button type="button" onclick="bukaModalCreate()" class="bg-emerald-100 text-emerald-700 px-6 py-2.5 rounded-xl font-bold hover:bg-emerald-200 transition">
             Daftarkan Nasabah Pertama
         </button>
     </div>

@@ -16,7 +16,7 @@
         <div class="mt-4 text-xs"><div class="bg-emerald-50 rounded-xl p-3"><span class="text-emerald-700"><i class="fa-solid fa-truck-ramp-box mr-1"></i>Terjual</span><strong class="block text-emerald-900 text-sm mt-1">{{ number_format((float)($sold[$row->kategori_id] ?? 0),2,',','.') }} kg</strong></div></div>
     </article>
 @empty
-    <div class="col-span-full bg-white border rounded-2xl p-12 text-center text-gray-500">Gudang masih kosong.</div>
+    <div class="col-span-full bg-white border border-gray-100 shadow-sm rounded-2xl p-12 text-center text-gray-500">Gudang masih kosong.</div>
 @endforelse
 </div>
 
@@ -84,18 +84,75 @@
 
 @push('scripts')
 <script>
-const stockRows = @json($stockData);
-let saleItems=[];
-const money=n=>'Rp '+Math.round(Number(n)||0).toLocaleString('id-ID'); const weight=n=>Number(n||0).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})+' kg';
-function rawMoney(el){return Number(el.value.replace(/\./g,''))||0;}
-function openSale(){saleForm.scrollTop=0;saleModal.classList.remove('hidden');saleModal.classList.add('flex');document.body.classList.add('overflow-hidden');requestAnimationFrame(()=>{saleModal.classList.remove('opacity-0');saleModalBox.classList.remove('scale-95');});}
-function closeSale(){saleModal.classList.add('opacity-0');saleModalBox.classList.add('scale-95');document.body.classList.remove('overflow-hidden');setTimeout(()=>{saleModal.classList.add('hidden');saleModal.classList.remove('flex');},300);}
-function preview(){const row=stockRows.find(r=>String(r.id)===saleCategory.value);const w=Number(saleWeight.value)||0,p=rawMoney(collectorPrice),c=rawMoney(customerPrice);if(!row)return {row:null,w,p,c,alreadyPaid:0,unpaid:0,revenue:0,rights:0,priorCost:0,margin:0};const alreadyPaid=Math.min(w,row.alreadyCredited),unpaid=Math.max(0,w-alreadyPaid),priorCost=row.alreadyCredited>0?alreadyPaid/row.alreadyCredited*row.alreadyCreditedCost:0,revenue=w*p,rights=unpaid*c;return {row,w,p,c,alreadyPaid,unpaid,revenue,rights,priorCost,margin:revenue-rights-priorCost};}
-function updateSalePreview(){const x=preview();stockInfo.textContent=weight(x.row?.stock);previewWeight.textContent=weight(x.w);previewRevenue.textContent=money(x.revenue);previewRights.textContent=money(x.rights);previewMargin.textContent=money(x.margin);}
-function addSaleItem(){const x=preview();if(!x.row||x.w<=0||x.w>x.row.stock||x.p<0||x.c<0){showToast('Lengkapi data dan pastikan berat tidak melebihi stok.','warning');return;}if(x.unpaid>0&&x.c>x.p){showToast('Harga nasabah tidak boleh melebihi harga pengepul.','error');return;}if(saleItems.some(i=>i.kategori_id===x.row.id)){showToast('Kategori sudah ada dalam rincian. Hapus dahulu untuk mengganti.','warning');return;}saleItems.push({kategori_id:x.row.id,nama:x.row.name,berat:x.w,harga_jual:x.p,harga_nasabah:x.c,revenue:x.revenue,rights:x.rights,margin:x.margin});saleCategory.value='';saleWeight.value='';collectorPrice.value='';customerPrice.value='';updateSalePreview();renderSaleCart();}
-function renderSaleCart(){saleCart.innerHTML=saleItems.length?saleItems.map((i,x)=>`<div class="border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm"><span class="w-10 h-10 shrink-0 rounded-xl bg-amber-50 text-amber-600 grid place-items-center"><i class="fa-solid fa-recycle"></i></span><div class="flex-1 min-w-0"><strong class="block text-sm text-gray-800 truncate">${i.nama}</strong><p class="text-xs text-gray-400 mt-0.5">${weight(i.berat)} · Pengepul ${money(i.harga_jual)}/kg</p><p class="text-xs text-emerald-600">Nasabah ${money(i.harga_nasabah)}/kg</p></div><div class="text-right shrink-0"><strong class="block text-sm text-gray-800">${money(i.revenue)}</strong><button type="button" onclick="saleItems.splice(${x},1);renderSaleCart()" class="mt-2 w-8 h-8 rounded-lg text-gray-300 hover:bg-red-50 hover:text-red-500 transition-colors" title="Hapus"><i class="fa-solid fa-trash-can text-xs"></i></button></div></div>`).join(''):'<div class="h-full min-h-72 grid place-items-center text-center px-6"><div><span class="mx-auto w-14 h-14 rounded-full bg-gray-100 text-gray-400 grid place-items-center"><i class="fa-solid fa-receipt text-xl"></i></span><h4 class="font-bold text-gray-600 mt-3">Belum ada penjualan</h4><p class="text-xs text-gray-400 mt-1">Pilih jenis sampah dan masukkan detail penjualan.</p></div></div>';saleItemCount.textContent=saleItems.length;cartRevenue.textContent=money(saleItems.reduce((s,i)=>s+i.revenue,0));cartRights.textContent=money(saleItems.reduce((s,i)=>s+i.rights,0));cartMargin.textContent=money(saleItems.reduce((s,i)=>s+i.margin,0));saleCartData.value=JSON.stringify(saleItems.map(({kategori_id,berat,harga_jual,harga_nasabah})=>({kategori_id,berat,harga_jual,harga_nasabah})));saleSubmit.disabled=saleItems.length===0;}
-async function submitSale(){if(!saleItems.length){showToast('Tambahkan item penjualan.','warning');return;}if(await showConfirm('Sistem akan memproses penjualan, memperbarui saldo nasabah, dan mencatat kas. Lanjutkan?','Konfirmasi Penjualan')){saleSubmit.disabled=true;saleForm.submit();}}
-renderSaleCart();updateSalePreview();
+    const stockRows = @json($stockData);
+    let saleItems=[];
+    const money=n=>'Rp '+Math.round(Number(n)||0).toLocaleString('id-ID');
+    const weight=n=>Number(n||0).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})+' kg';
+    function rawMoney(el) {
+        return Number(el.value.replace(/\./g,''))||0;
+    }
+    function openSale() {
+        saleForm.scrollTop=0;
+        saleModal.classList.remove('hidden');
+        saleModal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+        requestAnimationFrame(()=>{
+            saleModal.classList.remove('opacity-0');
+            saleModalBox.classList.remove('scale-95');
+        });
+    }
+    function closeSale() {
+        saleModal.classList.add('opacity-0');
+        saleModalBox.classList.add('scale-95');
+        document.body.classList.remove('overflow-hidden');
+        setTimeout(()=>{
+            saleModal.classList.add('hidden');
+            saleModal.classList.remove('flex');
+        },300);
+    }
+    function preview() {
+        const row=stockRows.find(r=>String(r.id)===saleCategory.value);
+        const w=Number(saleWeight.value)||0,p=rawMoney(collectorPrice),c=rawMoney(customerPrice);
+        if(!row) return {
+            row:null,w,p,c,alreadyPaid:0,unpaid:0,revenue:0,rights:0,priorCost:0,margin:0
+        };
+        const alreadyPaid=Math.min(w,row.alreadyCredited),unpaid=Math.max(0,w-alreadyPaid),priorCost=row.alreadyCredited>0?alreadyPaid/row.alreadyCredited*row.alreadyCreditedCost:0,revenue=w*p,rights=unpaid*c;
+        return {
+            row,w,p,c,alreadyPaid,unpaid,revenue,rights,priorCost,margin:revenue-rights-priorCost
+        };
+    }
+    function updateSalePreview() {
+        const x=preview();
+        stockInfo.textContent=weight(x.row?.stock);
+        previewWeight.textContent=weight(x.w);
+        previewRevenue.textContent=money(x.revenue);
+        previewRights.textContent=money(x.rights);
+        previewMargin.textContent=money(x.margin);
+    }
+    function addSaleItem() {
+        const x=preview();
+        if(!x.row||x.w<=0||x.w>x.row.stock||x.p<0||x.c<0){showToast('Lengkapi data dan pastikan berat tidak melebihi stok.','warning');return;}if(x.unpaid>0&&x.c>x.p){showToast('Harga nasabah tidak boleh melebihi harga pengepul.','error');return;}if(saleItems.some(i=>i.kategori_id===x.row.id)){showToast('Kategori sudah ada dalam rincian. Hapus dahulu untuk mengganti.','warning');return;}saleItems.push({kategori_id:x.row.id,nama:x.row.name,berat:x.w,harga_jual:x.p,harga_nasabah:x.c,revenue:x.revenue,rights:x.rights,margin:x.margin});saleCategory.value='';saleWeight.value='';collectorPrice.value='';customerPrice.value='';updateSalePreview();renderSaleCart();}
+    function renderSaleCart() {
+        saleCart.innerHTML=saleItems.length?saleItems.map((i,x)=>`<div class="border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm"><span class="w-10 h-10 shrink-0 rounded-xl bg-amber-50 text-amber-600 grid place-items-center"><i class="fa-solid fa-recycle"></i></span><div class="flex-1 min-w-0"><strong class="block text-sm text-gray-800 truncate">${i.nama}</strong><p class="text-xs text-gray-400 mt-0.5">${weight(i.berat)} · Pengepul ${money(i.harga_jual)}/kg</p><p class="text-xs text-emerald-600">Nasabah ${money(i.harga_nasabah)}/kg</p></div><div class="text-right shrink-0"><strong class="block text-sm text-gray-800">${money(i.revenue)}</strong><button type="button" onclick="saleItems.splice(${x},1);renderSaleCart()" class="mt-2 w-8 h-8 rounded-lg text-gray-300 hover:bg-red-50 hover:text-red-500 transition-colors" title="Hapus"><i class="fa-solid fa-trash-can text-xs"></i></button></div></div>`).join(''):'<div class="h-full min-h-72 grid place-items-center text-center px-6"><div><span class="mx-auto w-14 h-14 rounded-full bg-gray-100 text-gray-400 grid place-items-center"><i class="fa-solid fa-receipt text-xl"></i></span><h4 class="font-bold text-gray-600 mt-3">Belum ada penjualan</h4><p class="text-xs text-gray-400 mt-1">Pilih jenis sampah dan masukkan detail penjualan.</p></div></div>';
+        saleItemCount.textContent=saleItems.length;
+        cartRevenue.textContent=money(saleItems.reduce((s,i)=>s+i.revenue,0));
+        cartRights.textContent=money(saleItems.reduce((s,i)=>s+i.rights,0));
+        cartMargin.textContent=money(saleItems.reduce((s,i)=>s+i.margin,0));
+        saleCartData.value=JSON.stringify(saleItems.map(({kategori_id,berat,harga_jual,harga_nasabah})=>({kategori_id,berat,harga_jual,harga_nasabah})));
+        saleSubmit.disabled=saleItems.length===0;
+    }
+    async function submitSale() {
+        if(!saleItems.length) {
+            showToast('Tambahkan item penjualan.','warning');
+            return;
+        }
+        if(await showConfirm('Sistem akan memproses penjualan, memperbarui saldo nasabah, dan mencatat kas. Lanjutkan?','Konfirmasi Penjualan')) {
+            saleSubmit.disabled=true;
+            saleForm.submit();
+        }
+    }
+    renderSaleCart();
+    updateSalePreview();
 </script>
 @endpush
 @endsection

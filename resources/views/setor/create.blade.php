@@ -41,7 +41,7 @@
                         <div id="customerSearchWrap" class="relative mt-2 flex gap-2">
                             <input id="customerSearch" autocomplete="off" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Cari nama atau kode nasabah">
                             <button type="button" onclick="openQr()" class="w-12 shrink-0 rounded-xl border border-gray-200 text-emerald-600 hover:bg-emerald-50" title="Pindai QR"><i class="fa-solid fa-qrcode"></i></button>
-                            <div id="customerResults" class="hidden absolute top-full left-0 right-14 mt-2 z-30 bg-white border rounded-xl shadow-xl max-h-56 overflow-auto"></div>
+                            <div id="customerResults" class="hidden absolute top-full left-0 right-14 mt-2 z-30 bg-white border border-gray-100 rounded-xl shadow-xl max-h-56 overflow-auto"></div>
                         </div>
                         <div id="selectedCustomer" class="hidden mt-3 bg-emerald-50 border border-emerald-200 p-4 rounded-xl items-center gap-3">
                             <i class="fa-solid fa-circle-check text-emerald-500"></i>
@@ -140,7 +140,7 @@ function renderCategories() {
         </button>`;
     }).join('');
 }
-function escapeHtml(value) { const d=document.createElement('div'); d.textContent=value; return d.innerHTML; }
+function escapeHtml(value) {const d=document.createElement('div'); d.textContent=value; return d.innerHTML; }
 customerSearch.addEventListener('input', () => {
     const q=customerSearch.value.toLowerCase().trim();
     if(q.length<2){customerResults.classList.add('hidden');return;}
@@ -148,20 +148,152 @@ customerSearch.addEventListener('input', () => {
     customerResults.innerHTML=found.length?found.map(n=>`<button type="button" class="w-full text-left p-3 hover:bg-emerald-50" onclick="selectCustomer(${n.id})"><strong>${escapeHtml(n.name)}</strong><small class="block text-gray-500">${escapeHtml(n.code)}</small></button>`).join(''):'<p class="p-4 text-sm text-gray-500">Tidak ditemukan.</p>';
     customerResults.classList.remove('hidden');
 });
-function selectCustomer(id){const n=customers.find(x=>x.id===id);if(!n)return;customerId.value=n.id;selectedName.textContent=n.name;selectedMeta.textContent=`${n.code} - Saldo tersedia Rp ${rupiah(n.balance)}`;customerSearchWrap.classList.add('hidden');selectedCustomer.classList.remove('hidden');selectedCustomer.classList.add('flex');customerResults.classList.add('hidden');}
-function clearCustomer(){customerId.value='';customerSearch.value='';selectedCustomer.classList.add('hidden');selectedCustomer.classList.remove('flex');customerSearchWrap.classList.remove('hidden');}
-function openWeight(id){if(!customerId.value){showToast('Pilih nasabah terlebih dahulu.','warning');return;} activeCategory=categories.find(c=>c.id===id);weightTitle.textContent=activeCategory.name;weightInput.value='';weightModal.classList.remove('hidden');weightModal.classList.add('flex');setTimeout(()=>weightInput.focus(),50);}
-function closeWeight(){weightModal.classList.add('hidden');weightModal.classList.remove('flex');}
-function addWeight(){const weight=Math.round(Number(weightInput.value)*100)/100;if(!weight||weight<=0){showToast('Berat harus lebih dari 0.','warning');return;}const found=cart.find(i=>i.kategori_id===activeCategory.id);if(found)found.berat=Math.round((found.berat+weight)*100)/100;else cart.push({kategori_id:activeCategory.id,nama:activeCategory.name,berat:weight});closeWeight();renderCart();}
-function renderCart(){cartEmpty.classList.toggle('hidden',cart.length>0);cartList.classList.toggle('hidden',cart.length===0);cartCount.textContent=`${cart.length} jenis sampah dipilih`;cartList.innerHTML=cart.map((i,x)=>`<div class="p-4 flex items-center gap-3"><div class="flex-1"><strong>${escapeHtml(i.nama)}</strong><p class="text-xs text-gray-500">Nilai belum ditentukan</p></div><b>${kg(i.berat)} kg</b><button type="button" onclick="cart.splice(${x},1);renderCart()" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div>`).join('');totalWeight.textContent=kg(cart.reduce((s,i)=>s+i.berat,0));cartData.value=JSON.stringify(cart);}
-async function submitDeposit(){if(!customerId.value||!cart.length){showToast('Pilih nasabah dan tambahkan setoran.','warning');return;}if(await showConfirm('Catat barang dan berat sebagai setoran pending? Saldo tidak akan berubah.','Konfirmasi Setoran','emerald')){depositSubmit.disabled=true;depositForm.submit();}}
-function openQuickCategory(){quickError.classList.add('hidden');quickModal.classList.remove('hidden');quickModal.classList.add('flex');}
-function closeQuickCategory(){quickModal.classList.add('hidden');quickModal.classList.remove('flex');}
-quickForm.addEventListener('submit',async e=>{e.preventDefault();quickSubmit.disabled=true;quickError.classList.add('hidden');const body=new FormData(quickForm);try{const res=await fetch(@json(route('kategori.quick-store')),{method:'POST',headers:{'Accept':'application/json','X-CSRF-TOKEN':@json(csrf_token())},body});const data=await res.json();if(!res.ok)throw new Error(Object.values(data.errors||{}).flat()[0]||data.message);const k=data.kategori;categories.push({id:k.id,name:k.nama,emissionFactor:k.faktor_emisi?Number(k.faktor_emisi.faktor_kgco2e_per_kg):null});categories.sort((a,b)=>a.name.localeCompare(b.name,'id'));renderCategories();closeQuickCategory();quickForm.reset();showToast('Jenis baru ditambahkan tanpa menghapus keranjang.','success');openWeight(k.id);}catch(err){quickError.textContent=err.message;quickError.classList.remove('hidden');}finally{quickSubmit.disabled=false;}});
-async function openQr(){qrModal.classList.remove('hidden');qrModal.classList.add('flex');try{qrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});qrVideo.srcObject=qrStream;await qrVideo.play();scanQr();}catch(e){qrStatus.textContent='Kamera tidak dapat diakses. Gunakan pencarian nama/kode.';}}
-function scanQr(){if(qrVideo.readyState===qrVideo.HAVE_ENOUGH_DATA){qrCanvas.width=qrVideo.videoWidth;qrCanvas.height=qrVideo.videoHeight;const ctx=qrCanvas.getContext('2d');ctx.drawImage(qrVideo,0,0);const img=ctx.getImageData(0,0,qrCanvas.width,qrCanvas.height);const code=window.jsQR?.(img.data,img.width,img.height);if(code){const n=customers.find(x=>x.code===code.data.trim());if(n){selectCustomer(n.id);closeQr();showToast('Nasabah ditemukan dari QR.','success');return;}qrStatus.textContent='Kode QR tidak terdaftar.';}}qrFrame=requestAnimationFrame(scanQr);}
-function closeQr(){if(qrFrame)cancelAnimationFrame(qrFrame);if(qrStream)qrStream.getTracks().forEach(t=>t.stop());qrModal.classList.add('hidden');qrModal.classList.remove('flex');}
-renderCategories();renderCart();
+function selectCustomer(id) {
+    const n=customers.find(x=>x.id===id);
+    if(!n)return;customerId.value=n.id;
+    selectedName.textContent=n.name;
+    selectedMeta.textContent=`${n.code} - Saldo tersedia Rp ${rupiah(n.balance)}`;
+    customerSearchWrap.classList.add('hidden');
+    selectedCustomer.classList.remove('hidden');
+    selectedCustomer.classList.add('flex');
+    customerResults.classList.add('hidden');
+}
+function clearCustomer() {
+    customerId.value='';
+    customerSearch.value='';
+    selectedCustomer.classList.add('hidden');
+    selectedCustomer.classList.remove('flex');
+    customerSearchWrap.classList.remove('hidden');
+}
+function openWeight(id) {
+    if(!customerId.value) {
+        showToast('Pilih nasabah terlebih dahulu.','warning');
+        return;
+    }
+    activeCategory=categories.find(c=>c.id===id);
+    weightTitle.textContent=activeCategory.name;
+    weightInput.value='';
+    weightModal.classList.remove('hidden');
+    weightModal.classList.add('flex');
+    setTimeout(()=>weightInput.focus(),50);
+}
+function closeWeight() {
+    weightModal.classList.add('hidden');
+    weightModal.classList.remove('flex');
+}
+function addWeight() {
+    const weight=Math.round(Number(weightInput.value)*100)/100;
+    if(!weight||weight<=0) {
+        showToast('Berat harus lebih dari 0.','warning');
+        return;
+    }
+    const found=cart.find(i=>i.kategori_id===activeCategory.id);
+    if(found)found.berat=Math.round((found.berat+weight)*100)/100;
+    else cart.push({
+        kategori_id:activeCategory.id,
+        nama:activeCategory.name,
+        berat:weight
+    });
+    closeWeight();
+    renderCart();
+}
+function renderCart() {
+    cartEmpty.classList.toggle('hidden',cart.length>0);
+    cartList.classList.toggle('hidden',cart.length===0);
+    cartCount.textContent=`${cart.length} jenis sampah dipilih`;
+    cartList.innerHTML=cart.map((i,x)=>`<div class="p-4 flex items-center gap-3"><div class="flex-1"><strong>${escapeHtml(i.nama)}</strong><p class="text-xs text-gray-500">Nilai belum ditentukan</p></div><b>${kg(i.berat)} kg</b><button type="button" onclick="cart.splice(${x},1);renderCart()" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div>`).join('');
+    totalWeight.textContent=kg(cart.reduce((s,i)=>s+i.berat,0));
+    cartData.value=JSON.stringify(cart);
+}
+async function submitDeposit() {
+    if(!customerId.value||!cart.length) {
+        showToast('Pilih nasabah dan tambahkan setoran.','warning');
+        return;
+    }
+    if(await showConfirm('Catat barang dan berat sebagai setoran pending? Saldo tidak akan berubah.','Konfirmasi Setoran','emerald')) {
+        depositSubmit.disabled=true;
+        depositForm.submit();
+    }
+}
+function openQuickCategory() {
+    quickError.classList.add('hidden');
+    quickModal.classList.remove('hidden');
+    quickModal.classList.add('flex');
+}
+function closeQuickCategory() {
+    quickModal.classList.add('hidden');
+    quickModal.classList.remove('flex');
+}
+quickForm.addEventListener(
+    'submit',async e=>{ 
+        e.preventDefault();
+        quickSubmit.disabled=true;
+        quickError.classList.add('hidden');
+        const body=new FormData(quickForm);
+        try {
+            const res=await fetch(@json(route('kategori.quick-store')),{method:'POST',headers:{'Accept':'application/json','X-CSRF-TOKEN':@json(csrf_token())},body});
+            const data=await res.json();
+            if(!res.ok)throw new Error(Object.values(data.errors||{}).flat()[0]||data.message);
+            const k=data.kategori;
+            categories.push({id:k.id,name:k.nama,emissionFactor:k.faktor_emisi?Number(k.faktor_emisi.faktor_kgco2e_per_kg):null});
+            categories.sort((a,b)=>a.name.localeCompare(b.name,'id'));
+            renderCategories();
+            closeQuickCategory();
+            quickForm.reset();
+            showToast('Jenis baru ditambahkan tanpa menghapus keranjang.','success');
+            openWeight(k.id);
+        }
+        catch(err) {
+            quickError.textContent=err.message;
+            quickError.classList.remove('hidden');
+        }
+        finally {
+            quickSubmit.disabled=false;
+        }
+    }
+);
+async function openQr() {
+    qrModal.classList.remove('hidden');
+    qrModal.classList.add('flex');
+    try {
+        qrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+        qrVideo.srcObject=qrStream;
+        await qrVideo.play();
+        scanQr();
+    }
+    catch(e){ 
+        qrStatus.textContent='Kamera tidak dapat diakses. Gunakan pencarian nama/kode.';
+    }
+}
+function scanQr() {
+    if(qrVideo.readyState===qrVideo.HAVE_ENOUGH_DATA) {
+        qrCanvas.width=qrVideo.videoWidth;
+        qrCanvas.height=qrVideo.videoHeight;
+        const ctx=qrCanvas.getContext('2d');
+        ctx.drawImage(qrVideo,0,0);
+        const img=ctx.getImageData(0,0,qrCanvas.width,qrCanvas.height);
+        const code=window.jsQR?.(img.data,img.width,img.height);
+        if(code) {
+            const n=customers.find(x=>x.code===code.data.trim());
+            if(n) {
+                selectCustomer(n.id);
+                closeQr();
+                showToast('Nasabah ditemukan dari QR.','success');
+                return;
+            }
+            qrStatus.textContent='Kode QR tidak terdaftar.';
+        }
+    }
+    qrFrame=requestAnimationFrame(scanQr);
+}
+function closeQr() {
+    if(qrFrame)cancelAnimationFrame(qrFrame);
+    if(qrStream)qrStream.getTracks().forEach(t=>t.stop());
+    qrModal.classList.add('hidden');
+    qrModal.classList.remove('flex');
+}
+renderCategories();
+renderCart();
 </script>
 @endpush
 @endsection

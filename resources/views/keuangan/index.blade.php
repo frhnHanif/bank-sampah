@@ -6,7 +6,7 @@
         <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Buku Kas & Keuangan</h1>
         <p class="text-sm text-gray-500 font-medium">Pisahkan kas aktual, kewajiban tabungan, margin, dan biaya operasional.</p>
     </div>
-    <button type="button" onclick="bukaModalOperasional()" class="bg-amber-500 text-white px-6 py-2.5 rounded-full font-bold hover:bg-amber-600 transition shadow-sm flex items-center gap-2 w-full sm:w-auto justify-center">
+    <button type="button" onclick="bukaModalOperasional()" class="bg-amber-500 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-amber-600 transition shadow-sm flex items-center gap-2 w-full sm:w-auto justify-center">
         <i class="fa-solid fa-file-invoice-dollar"></i> Catat Operasional
     </button>
 </div>
