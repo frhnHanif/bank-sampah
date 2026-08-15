@@ -200,21 +200,20 @@
                 </h1>
 
                 <div class="mt-6 pt-5 border-t border-emerald-400/30 flex items-center gap-3">
-                    
                     @unless($isNasabahView)
                     <button type="button" onclick="bukaModalTarik()" class="flex-1 bg-white text-emerald-700 hover:bg-emerald-50 font-black py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
                         <i class="fa-solid fa-hand-holding-dollar text-lg"></i> Tarik Tunai
                     </button>
-
-                    <a href="{{ route('tabungan.idcard', $nasabah->id) }}" target="_blank" class="w-14 h-[52px] bg-emerald-600 hover:bg-emerald-500 border border-emerald-400/50 text-white rounded-xl transition-colors shadow-sm flex items-center justify-center shrink-0 tooltip" title="Cetak QR ID Card">
-                        <i class="fa-solid fa-qrcode text-xl"></i>
-                    </a>
-                    @else
-                    <div class="flex-1 text-center text-emerald-100 text-sm py-2">
-                        <i class="fa-solid fa-lock mr-1.5"></i> Hanya bisa dilihat
-                    </div>
                     @endunless
 
+                    <a href="{{ route('tabungan.idcard', $nasabah->id) }}" target="_blank"
+                        class="{{ $isNasabahView ? 'flex-1 gap-2 px-4 font-black' : 'w-14 shrink-0 tooltip' }} h-[52px] bg-emerald-600 hover:bg-emerald-500 border border-emerald-400/50 text-white rounded-xl transition-colors shadow-sm flex items-center justify-center"
+                        title="Lihat QR ID Card">
+                        <i class="fa-solid fa-qrcode text-xl"></i>
+                        @if($isNasabahView)
+                        <span>Lihat QR ID Card</span>
+                        @endif
+                    </a>
                 </div>
             </div>
 
@@ -274,6 +273,7 @@
     </div>
 </div>
 
+@unless($isNasabahView)
 <div id="modalTarikTunai" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
     <div class="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300" id="modalTarikBox">
         
@@ -320,6 +320,7 @@
         </form>
     </div>
 </div>
+@endunless
 
 <div id="modalFilterBulan" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
     <div class="bg-white rounded-2xl w-full max-w-xs mx-4 overflow-hidden transform scale-95 transition-transform duration-300 shadow-xl" id="modalFilterBulanBox">
@@ -423,6 +424,7 @@
         }, 300);
     }
 
+    @unless($isNasabahView)
     // === MODAL TARIK TUNAI ===
     const modalTarik = document.getElementById('modalTarikTunai');
     const modalTarikBox = document.getElementById('modalTarikBox');
@@ -455,6 +457,7 @@
             document.getElementById('formTarikTunai').submit();
         }
     }
+    @endunless
 
     // === MODAL FILTER BULAN ===
     const modalFB = document.getElementById('modalFilterBulan');

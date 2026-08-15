@@ -277,6 +277,26 @@ class SettlementFlowTest extends TestCase
         $this->assertSame(0, MutasiKas::where('tipe', 'pengeluaran')->count());
     }
 
+    public function test_nasabah_view_shows_qr_without_cash_withdrawal(): void
+    {
+        $customer = $this->customer('Nasabah QR');
+        $session = [
+            'nasabah_id' => $customer->id,
+            'nasabah_login_at' => time(),
+        ];
+
+        $this->withSession($session)
+            ->get(route('tabungan.show', $customer))
+            ->assertOk()
+            ->assertSee('Lihat QR ID Card')
+            ->assertDontSee('Tarik Tunai');
+
+        $this->withSession($session)
+            ->get(route('tabungan.idcard', $customer))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
     private function customer(string $name, float $balance = 0): Nasabah
     {
         static $sequence = 0;

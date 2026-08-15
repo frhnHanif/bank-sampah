@@ -36,6 +36,7 @@ Route::post('/nasabah/logout', [NasabahAuthController::class, 'logout'])->name('
 Route::middleware('nasabah.access')->group(function () {
     Route::get('/nasabah/{id}/tabungan', [TabunganController::class, 'show'])->name('tabungan.show');
     Route::get('/nasabah/{id}/tabungan/pdf', [TabunganController::class, 'exportPdf'])->name('tabungan.pdf');
+    Route::get('/nasabah/{id}/id-card', [TabunganController::class, 'generateIdCard'])->name('tabungan.idcard');
 });
 
 // ─── PENGURUS (harus login) ───────────────────────────────────
@@ -47,7 +48,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('nasabah', NasabahController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('setor', TransaksiSetorController::class)->only(['index', 'create', 'store']);
     Route::post('/nasabah/{id}/tabungan/tarik', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
-    Route::get('/nasabah/{id}/id-card', [TabunganController::class, 'generateIdCard'])->name('tabungan.idcard');
     Route::get('/stok', [StokController::class, 'index'])->name('stok.index');
     Route::get('/jual', [TransaksiJualController::class, 'create'])->name('jual.create');
     Route::post('/jual', [TransaksiJualController::class, 'store'])->name('jual.store');
