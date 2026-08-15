@@ -26,6 +26,7 @@ class NasabahAccess
         if (session('nasabah_id') && (int) session('nasabah_id') === (int) $routeId) {
             // Refresh timestamp agar timeout 15 menit diperpanjang
             session(['nasabah_login_at' => time()]);
+
             return $next($request);
         }
 

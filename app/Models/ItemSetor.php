@@ -17,9 +17,7 @@ class ItemSetor extends Model
             'berat_kg' => 'decimal:2',
             'berat_teralokasi_kg' => 'decimal:2',
             'status' => SettlementStatus::class,
-            'is_legacy' => 'boolean',
-            'nilai' => 'decimal:2',
-            'co2' => 'decimal:4',
+            'jumlah_pcs' => 'integer',
         ];
     }
 
@@ -33,9 +31,9 @@ class ItemSetor extends Model
         return $this->belongsTo(TransaksiSetor::class, 'transaksi_setor_id');
     }
 
-    public function kategori()
+    public function jenisSampah()
     {
-        return $this->belongsTo(KategoriSampah::class)->withTrashed();
+        return $this->belongsTo(JenisSampah::class)->withTrashed();
     }
 
     public function alokasi()

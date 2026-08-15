@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\AllocationSource;
 use App\Enums\Co2Status;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,7 +14,6 @@ class AlokasiPenjualan extends Model
     protected function casts(): array
     {
         return [
-            'sumber_tipe' => AllocationSource::class,
             'co2_status' => Co2Status::class,
             'berat_kg' => 'decimal:2',
             'harga_pengepul_per_kg' => 'decimal:2',
@@ -37,15 +35,5 @@ class AlokasiPenjualan extends Model
     public function itemSetor()
     {
         return $this->belongsTo(ItemSetor::class);
-    }
-
-    public function legacyInventory()
-    {
-        return $this->belongsTo(LegacyInventory::class);
-    }
-
-    public function faktorEmisi()
-    {
-        return $this->belongsTo(FaktorEmisi::class);
     }
 }

@@ -15,9 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('nasabah_id')->constrained('nasabah')->cascadeOnDelete();
             $table->date('tanggal');
-            $table->decimal('total_nilai', 15, 2)->default(0); // Total Rp
-            $table->decimal('total_co2', 10, 4)->default(0);   // Total CO2 offset
             $table->text('catatan')->nullable();
+            $table->index('tanggal');
             $table->timestamps();
         });
     }

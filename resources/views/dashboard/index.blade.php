@@ -69,7 +69,7 @@
     </div>
 
     <!-- <div class="bg-sky-50 border border-sky-200 text-sky-800 rounded-xl px-4 py-3 text-xs mb-8">
-        Estimasi kgCO₂e flow baru diakui pada tanggal penjualan dan memakai snapshot faktor. Histori sebelum cutover tetap memakai metode legacy setoran.
+        Emisi kgCO₂e diakui pada tanggal penjualan dan memakai snapshot faktor kelompok material.
     </div> -->
 
     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Target & Dampak CO₂ — Fokus CSR</p>
@@ -198,7 +198,7 @@
         <div class="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col">
             <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
                 <i class="fa-solid fa-chart-pie text-emerald-600"></i>
-                <h3 class="font-bold text-gray-800 text-sm">Kontribusi CO₂ per kategori sampah</h3>
+                <h3 class="font-bold text-gray-800 text-sm">Kontribusi CO₂ per jenis sampah</h3>
             </div>
             <div class="p-6 flex-1 flex items-center">
                 @if($co2PerKategori->count() > 0)
@@ -241,7 +241,7 @@
                         </div>
                     </div>
                 @else
-                    <div class="text-center text-sm text-gray-400 py-8 w-full font-medium italic">Belum ada data kategori</div>
+                    <div class="text-center text-sm text-gray-400 py-8 w-full font-medium italic">Belum ada data jenis sampah</div>
                 @endif
             </div>
         </div>

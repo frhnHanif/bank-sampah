@@ -21,19 +21,14 @@ class DashboardController extends Controller
 
         $totalSampah = (float) ItemSetor::sum('berat_kg');
         $totalTersalurkan = (float) ItemJual::sum('berat_kg');
-        $pendingWeight = (float) ItemSetor::where('is_legacy', false)
-            ->selectRaw('COALESCE(SUM(berat_kg - berat_teralokasi_kg), 0) AS total')->value('total');
+        $pendingWeight = (float) ItemSetor::selectRaw('COALESCE(SUM(berat_kg - berat_teralokasi_kg), 0) AS total')->value('total');
         $unclassifiedWeight = (float) AlokasiPenjualan::where('co2_status', 'PENDING')->sum('berat_kg');
 
         $sampahBulanIni = $this->depositWeightForMonth($now);
         $sampahBulanLalu = $this->depositWeightForMonth($lastMonth);
         $trenSampah = $sampahBulanLalu > 0 ? (($sampahBulanIni - $sampahBulanLalu) / $sampahBulanLalu) * 100 : 0;
 
-        // Legacy memakai metode lama (setoran); flow baru hanya memakai allocation
-        // yang sudah terealisasi saat sale. Keduanya tidak pernah dijumlah dua kali.
-        $legacyCO2 = (float) ItemSetor::whereHas('transaksi', fn ($q) => $q->where('flow_version', 1))->sum('co2');
-        $newCO2 = (float) AlokasiPenjualan::where('co2_status', 'REALIZED')->sum('co2_terealisasi');
-        $totalCO2 = $legacyCO2 + $newCO2;
+        $totalCO2 = (float) AlokasiPenjualan::where('co2_status', 'REALIZED')->sum('co2_terealisasi');
         $co2BulanIni = $this->co2ForMonth($now);
         $co2BulanLalu = $this->co2ForMonth($lastMonth);
         $trenCO2 = $co2BulanLalu > 0 ? (($co2BulanIni - $co2BulanLalu) / $co2BulanLalu) * 100 : 0;
@@ -91,57 +86,28 @@ class DashboardController extends Controller
 
     private function co2ForMonth(Carbon $month): float
     {
-        $legacy = (float) ItemSetor::whereHas('transaksi', fn ($q) => $q->where('flow_version', 1)
-            ->whereYear('tanggal', $month->year)->whereMonth('tanggal', $month->month))->sum('co2');
         $realized = (float) AlokasiPenjualan::where('co2_status', 'REALIZED')
             ->whereHas('itemJual.transaksi', fn ($q) => $q
                 ->whereYear('tanggal', $month->year)->whereMonth('tanggal', $month->month))
             ->sum('co2_terealisasi');
 
-        return $legacy + $realized;
+        return $realized;
     }
 
     private function environmentalContributors()
     {
-        $legacy = DB::table('item_setor')->join('transaksi_setor', 'transaksi_setor.id', '=', 'item_setor.transaksi_setor_id')
-            ->join('nasabah', 'nasabah.id', '=', 'transaksi_setor.nasabah_id')
-            ->where('transaksi_setor.flow_version', 1)
-            ->select('nasabah.id', 'nasabah.nama', 'nasabah.rt', 'nasabah.rw', DB::raw('SUM(item_setor.co2) AS total_co2'))
-            ->groupBy('nasabah.id', 'nasabah.nama', 'nasabah.rt', 'nasabah.rw')->get()->keyBy('id');
-        $new = DB::table('alokasi_penjualan')->join('item_setor', 'item_setor.id', '=', 'alokasi_penjualan.item_setor_id')
+        return DB::table('alokasi_penjualan')->join('item_setor', 'item_setor.id', '=', 'alokasi_penjualan.item_setor_id')
             ->join('transaksi_setor', 'transaksi_setor.id', '=', 'item_setor.transaksi_setor_id')
             ->join('nasabah', 'nasabah.id', '=', 'transaksi_setor.nasabah_id')->where('alokasi_penjualan.co2_status', 'REALIZED')
             ->select('nasabah.id', 'nasabah.nama', 'nasabah.rt', 'nasabah.rw', DB::raw('SUM(alokasi_penjualan.co2_terealisasi) AS total_co2'))
             ->groupBy('nasabah.id', 'nasabah.nama', 'nasabah.rt', 'nasabah.rw')->get();
-        foreach ($new as $row) {
-            if ($legacy->has($row->id)) {
-                $legacy[$row->id]->total_co2 += $row->total_co2;
-            } else {
-                $legacy[$row->id] = $row;
-            }
-        }
-
-        return $legacy->values();
     }
 
     private function environmentalByCategory()
     {
-        $legacy = DB::table('item_setor')->join('transaksi_setor', 'transaksi_setor.id', '=', 'item_setor.transaksi_setor_id')
-            ->join('kategori_sampah', 'kategori_sampah.id', '=', 'item_setor.kategori_id')->where('transaksi_setor.flow_version', 1)
-            ->select('kategori_sampah.id', 'kategori_sampah.nama', DB::raw('SUM(item_setor.co2) AS total_co2'))
-            ->groupBy('kategori_sampah.id', 'kategori_sampah.nama')->get()->keyBy('id');
-        $new = DB::table('alokasi_penjualan')->join('item_jual', 'item_jual.id', '=', 'alokasi_penjualan.item_jual_id')
-            ->join('kategori_sampah', 'kategori_sampah.id', '=', 'item_jual.kategori_id')->where('alokasi_penjualan.co2_status', 'REALIZED')
-            ->select('kategori_sampah.id', 'kategori_sampah.nama', DB::raw('SUM(alokasi_penjualan.co2_terealisasi) AS total_co2'))
-            ->groupBy('kategori_sampah.id', 'kategori_sampah.nama')->get();
-        foreach ($new as $row) {
-            if ($legacy->has($row->id)) {
-                $legacy[$row->id]->total_co2 += $row->total_co2;
-            } else {
-                $legacy[$row->id] = $row;
-            }
-        }
-
-        return $legacy->values()->sortByDesc('total_co2')->values();
+        return DB::table('alokasi_penjualan')->join('item_jual', 'item_jual.id', '=', 'alokasi_penjualan.item_jual_id')
+            ->join('jenis_sampah', 'jenis_sampah.id', '=', 'item_jual.jenis_sampah_id')->where('alokasi_penjualan.co2_status', 'REALIZED')
+            ->select('jenis_sampah.id', 'jenis_sampah.nama', DB::raw('SUM(alokasi_penjualan.co2_terealisasi) AS total_co2'))
+            ->groupBy('jenis_sampah.id', 'jenis_sampah.nama')->orderByDesc('total_co2')->get();
     }
 }

@@ -2,67 +2,56 @@
 
 namespace App\Services;
 
-use App\Enums\AllocationSource;
 use App\Enums\Co2Status;
 use App\Models\AlokasiPenjualan;
 use App\Models\ItemJual;
-use App\Models\KategoriSampah;
+use App\Models\KelompokMaterial;
 use App\Models\TransaksiJual;
 use Illuminate\Support\Facades\DB;
 
 class EmissionRealizationService
 {
-    public function realizePendingForCategory(KategoriSampah $kategori): int
+    public function realizePendingForGroup(KelompokMaterial $kelompok): int
     {
-        $factor = $kategori->faktorEmisi;
-        if (! $factor) {
+        $factor = $kelompok->faktor_emisi_kgco2e_per_kg;
+        if ($factor === null) {
             return 0;
         }
 
-        return DB::transaction(function () use ($kategori, $factor): int {
-            $allocations = AlokasiPenjualan::query()
-                ->where('sumber_tipe', AllocationSource::Setoran->value)
-                ->where('co2_status', Co2Status::Pending->value)
-                ->whereHas('itemJual', fn ($query) => $query->where('kategori_id', $kategori->id))
-                ->lockForUpdate()
-                ->get();
-
-            $itemJualIds = [];
+        return DB::transaction(function () use ($kelompok, $factor) {
+            $allocations = AlokasiPenjualan::where('co2_status', Co2Status::Pending->value)
+                ->whereHas('itemJual.jenisSampah', fn ($q) => $q->where('kelompok_material_id', $kelompok->id))
+                ->lockForUpdate()->get();
             foreach ($allocations as $allocation) {
-                $co2 = round((float) $allocation->berat_kg * (float) $factor->faktor_kgco2e_per_kg, 6);
                 $allocation->update([
-                    'faktor_emisi_id' => $factor->id,
-                    'faktor_emisi_snapshot' => $factor->faktor_kgco2e_per_kg,
-                    'co2_terealisasi' => $co2,
+                    'faktor_emisi_snapshot' => $factor,
+                    'sumber_faktor_emisi_snapshot' => $kelompok->sumber_faktor_emisi,
+                    'versi_faktor_emisi_snapshot' => $kelompok->versi_faktor_emisi,
+                    'co2_terealisasi' => round((float) $allocation->berat_kg * (float) $factor, 6),
                     'co2_status' => Co2Status::Realized,
                 ]);
-                $itemJualIds[] = $allocation->item_jual_id;
             }
-
-            $this->refreshAggregates($itemJualIds);
+            $this->refreshAggregates($allocations->pluck('item_jual_id')->all());
 
             return $allocations->count();
         });
     }
 
-    public function refreshAggregates(array $itemJualIds): void
+    private function refreshAggregates(array $itemIds): void
     {
         $saleIds = [];
-        foreach (array_unique($itemJualIds) as $itemJualId) {
-            $item = ItemJual::find($itemJualId);
+        foreach (array_unique($itemIds) as $id) {
+            $item = ItemJual::find($id);
             if (! $item) {
                 continue;
             }
-            $sum = AlokasiPenjualan::where('item_jual_id', $item->id)->sum('co2_terealisasi');
+            $sum = AlokasiPenjualan::where('item_jual_id', $id)->sum('co2_terealisasi');
             $item->update(['total_co2_terealisasi' => $sum > 0 ? round((float) $sum, 6) : null]);
             $saleIds[] = $item->transaksi_jual_id;
         }
-
-        foreach (array_unique($saleIds) as $saleId) {
-            $sum = ItemJual::where('transaksi_jual_id', $saleId)->sum('total_co2_terealisasi');
-            TransaksiJual::whereKey($saleId)->update([
-                'total_co2_terealisasi' => $sum > 0 ? round((float) $sum, 6) : null,
-            ]);
+        foreach (array_unique($saleIds) as $id) {
+            $sum = ItemJual::where('transaksi_jual_id', $id)->sum('total_co2_terealisasi');
+            TransaksiJual::whereKey($id)->update(['total_co2_terealisasi' => $sum > 0 ? round((float) $sum, 6) : null]);
         }
     }
 }

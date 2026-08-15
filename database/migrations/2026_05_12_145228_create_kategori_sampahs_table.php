@@ -6,25 +6,37 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
-{
-    Schema::create('kategori_sampah', function (Blueprint $table) {
-        $table->id();
-        $table->string('nama');
-        $table->decimal('harga_beli_per_kg', 15, 2); 
-        $table->decimal('faktor_emisi', 8, 4); // kg CO2/kg sampah
-        $table->timestamps();
-    });
-}
+    {
+        Schema::create('kelompok_material', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama');
+            $table->string('nama_normalized')->unique();
+            $table->decimal('faktor_emisi_kgco2e_per_kg', 16, 6)->nullable();
+            $table->text('sumber_faktor_emisi')->nullable();
+            $table->string('versi_faktor_emisi')->nullable();
+            $table->date('tanggal_berlaku_faktor_emisi')->nullable();
+            $table->text('catatan_faktor_emisi')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            $table->softDeletes();
+        });
 
-    /**
-     * Reverse the migrations.
-     */
+        Schema::create('jenis_sampah', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('kelompok_material_id')->constrained('kelompok_material')->restrictOnDelete();
+            $table->string('nama');
+            $table->string('nama_normalized')->unique();
+            $table->string('satuan_pencatatan', 3);
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+
     public function down(): void
     {
-        Schema::dropIfExists('kategori_sampahs');
+        Schema::dropIfExists('jenis_sampah');
+        Schema::dropIfExists('kelompok_material');
     }
 };

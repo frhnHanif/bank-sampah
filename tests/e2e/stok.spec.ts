@@ -17,11 +17,10 @@ test.describe('Stok Gudang', () => {
     const jualBtn = page.getByRole('button', { name: /Jual ke Pengepul/i });
     await expect(jualBtn).toBeVisible();
 
-    // Jika gudang berisi stok, kartu membedakan legacy dan pending baru.
+    // Jika gudang berisi stok, kartu menampilkan sisa stok per jenis sampah.
     const stokCards = page.locator('article').filter({ hasText: /Stok fisik/i });
     const count = await stokCards.count();
     if (count > 0) {
-      await expect(page.getByText('Legacy').first()).toBeVisible();
       await expect(page.getByText('Pending baru').first()).toBeVisible();
     } else {
       await expect(page.getByText(/Gudang masih kosong/i)).toBeVisible();

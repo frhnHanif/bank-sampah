@@ -3,14 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\AlokasiPenjualan;
-use App\Models\ItemJual;
-use App\Models\ItemSetor;
 use App\Models\MutasiKas;
 use App\Models\Tabungan;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class KeuanganController extends Controller
 {
@@ -53,12 +50,7 @@ class KeuanganController extends Controller
         $totalPenjualanPengepul = (float) MutasiKas::where('tipe', 'pemasukan')->where('kategori', 'Penjualan')->sum('nominal');
         $totalRekeningWarga = (float) Tabungan::sum('saldo_saat_ini');
 
-        $costFlowBaru = (float) AlokasiPenjualan::sum('cost_basis');
-        $avgLegacy = ItemSetor::where('is_legacy', true)->select('kategori_id', DB::raw('SUM(nilai) / NULLIF(SUM(berat_kg), 0) AS avg_cost'))
-            ->groupBy('kategori_id')->pluck('avg_cost', 'kategori_id');
-        $costLegacySales = ItemJual::whereHas('transaksi', fn ($q) => $q->where('flow_version', 1))->get()
-            ->sum(fn ($item) => (float) $item->berat_kg * (float) ($avgLegacy[$item->kategori_id] ?? 0));
-        $cogsTerjual = round($costFlowBaru + $costLegacySales, 2);
+        $cogsTerjual = round((float) AlokasiPenjualan::sum('cost_basis'), 2);
         $totalMarginKotor = round($totalPenjualanPengepul - $cogsTerjual, 2);
         $totalOperasional = (float) MutasiKas::where('tipe', 'pengeluaran')->where('kategori', 'Operasional')->sum('nominal');
         $labaSetelahOperasional = round($totalMarginKotor - $totalOperasional, 2);

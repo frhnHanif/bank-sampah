@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('kategori'); // Cth: 'Penjualan', 'Tarik Tunai Nasabah', 'Operasional'
             $table->decimal('nominal', 15, 2);
             $table->text('keterangan')->nullable();
+            $table->foreignId('ref_transaksi_jual_id')->nullable()->constrained('transaksi_jual')->nullOnDelete();
             $table->timestamps();
         });
     }

@@ -10,8 +10,13 @@ class Stok extends Model
 
     protected $guarded = ['id'];
 
-    public function kategori()
+    protected function casts(): array
     {
-        return $this->belongsTo(KategoriSampah::class);
+        return ['total_berat_kg' => 'decimal:2'];
+    }
+
+    public function jenisSampah()
+    {
+        return $this->belongsTo(JenisSampah::class)->withTrashed();
     }
 }

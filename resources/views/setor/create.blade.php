@@ -52,10 +52,7 @@
                 </section>
 
                 <section class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-                    <div class="flex items-center justify-between gap-3 mb-4">
-                        <div><h2 class="font-black text-gray-800">Jenis Sampah</h2><p class="text-xs text-gray-500">Pilih jenis sampah yang akan ditimbang.</p></div>
-                        <button type="button" onclick="openQuickCategory()" class="shrink-0 text-sm font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-4 py-2.5 rounded-xl hover:bg-emerald-100"><i class="fa-solid fa-plus mr-2"></i> Tambah Jenis Baru</button>
-                    </div>
+                    <div class="mb-4"><h2 class="font-black text-gray-800">Jenis Sampah</h2><p class="text-xs text-gray-500">Pilih dari master jenis sampah aktif.</p></div>
                     <div id="categoryGrid" class="grid sm:grid-cols-2 gap-3"></div>
                 </section>
             </div>
@@ -87,22 +84,12 @@
 
 <div id="weightModal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-gray-900/50 p-4">
     <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-        <h3 class="font-black text-lg" id="weightTitle"></h3><p class="text-sm text-gray-500 mt-1">Masukkan berat hasil penimbangan.</p>
-        <input id="weightInput" type="number" min="0.01" step="0.01" class="mt-5 w-full border border-emerald-300 rounded-xl px-4 py-3 text-xl text-center outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0,00">
+        <h3 class="font-black text-lg" id="weightTitle"></h3><p class="text-sm text-gray-500 mt-1" id="weightHelp">Masukkan berat hasil penimbangan.</p>
+        <div id="piecesWrap" class="hidden"><label class="block text-xs font-black text-gray-400 uppercase mt-5">Jumlah (pcs)</label><input id="piecesInput" type="number" min="1" step="1" class="mt-2 w-full border rounded-xl px-4 py-3 text-xl text-center" placeholder="0"></div>
+        <label class="block text-xs font-black text-gray-400 uppercase mt-5" id="weightLabel">Berat (kg)</label>
+        <input id="weightInput" type="number" min="0.01" step="0.01" class="mt-2 w-full border border-emerald-300 rounded-xl px-4 py-3 text-xl text-center outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0,00">
         <div class="flex gap-3 mt-5"><button type="button" onclick="closeWeight()" class="flex-1 bg-gray-100 py-3 rounded-xl font-bold">Batal</button><button type="button" onclick="addWeight()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold">Tambahkan</button></div>
     </div>
-</div>
-
-<div id="quickModal" class="fixed inset-0 z-[125] hidden items-center justify-center bg-gray-900/50 p-4">
-    <form id="quickForm" class="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
-        <h3 class="font-black text-lg">Tambah Jenis Sampah Baru</h3><p class="text-sm text-gray-500 mt-1">Jenis langsung tersedia tanpa menghapus isi keranjang.</p>
-        <label class="block text-xs font-black text-gray-400 uppercase mt-5">Nama jenis sampah</label>
-        <input name="nama" required maxlength="255" class="mt-2 w-full border rounded-xl px-4 py-3" placeholder="Contoh: Dinamo Bekas">
-        <label class="block text-xs font-black text-gray-400 uppercase mt-4">Kelompok faktor emisi</label>
-        <select name="faktor_emisi_id" class="mt-2 w-full border rounded-xl px-4 py-3"><option value="">Belum diklasifikasikan</option>@foreach($faktorEmisi as $factor)<option value="{{ $factor->id }}">{{ $factor->nama_material }}</option>@endforeach</select>
-        <p id="quickError" class="hidden text-sm text-red-600 mt-3"></p>
-        <div class="flex gap-3 mt-5"><button type="button" onclick="closeQuickCategory()" class="flex-1 bg-gray-100 py-3 rounded-xl font-bold">Batal</button><button id="quickSubmit" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold">Simpan & Pilih</button></div>
-    </form>
 </div>
 
 <div id="qrModal" class="fixed inset-0 z-[130] hidden items-center justify-center bg-gray-900/70 p-4"><div class="bg-white rounded-2xl p-5 w-full max-w-md"><div class="flex justify-between mb-3"><strong>Pindai QR Nasabah</strong><button type="button" onclick="closeQr()"><i class="fa-solid fa-xmark"></i></button></div><video id="qrVideo" playsinline class="w-full h-64 bg-black rounded-xl object-cover"></video><canvas id="qrCanvas" class="hidden"></canvas><p id="qrStatus" class="text-sm text-gray-500 mt-3 text-center">Arahkan kamera ke QR ID Card.</p></div></div>
@@ -114,10 +101,12 @@
 @push('scripts')
 <script>
 const customers = @json($nasabah).map(n => ({id:n.id, name:n.nama, code:n.kode, balance:Number(n.tabungan?.saldo_saat_ini || 0)}));
-let categories = @json($kategori).map(k => ({
+let categories = @json($jenis).map(k => ({
     id:k.id,
     name:k.nama,
-    emissionFactor:k.faktor_emisi ? Number(k.faktor_emisi.faktor_kgco2e_per_kg) : null
+    unit:k.satuan_pencatatan,
+    group:k.kelompok_material.nama,
+    emissionFactor:k.kelompok_material.faktor_emisi_kgco2e_per_kg === null ? null : Number(k.kelompok_material.faktor_emisi_kgco2e_per_kg)
 }));
 let cart = [], activeCategory = null, qrStream = null, qrFrame = null;
 const rupiah = n => Number(n).toLocaleString('id-ID');
@@ -172,6 +161,9 @@ function openWeight(id) {
     }
     activeCategory=categories.find(c=>c.id===id);
     weightTitle.textContent=activeCategory.name;
+    piecesWrap.classList.toggle('hidden',activeCategory.unit!=='PCS');
+    weightLabel.textContent=activeCategory.unit==='PCS'?'Berat total (kg)':'Berat (kg)';
+    piecesInput.value='';
     weightInput.value='';
     weightModal.classList.remove('hidden');
     weightModal.classList.add('flex');
@@ -187,12 +179,15 @@ function addWeight() {
         showToast('Berat harus lebih dari 0.','warning');
         return;
     }
-    const found=cart.find(i=>i.kategori_id===activeCategory.id);
-    if(found)found.berat=Math.round((found.berat+weight)*100)/100;
+    const pieces=activeCategory.unit==='PCS'?Number(piecesInput.value):null;
+    if(activeCategory.unit==='PCS'&&(!Number.isInteger(pieces)||pieces<=0)){showToast('Jumlah pcs harus bilangan bulat lebih dari 0.','warning');return;}
+    const found=cart.find(i=>i.jenis_sampah_id===activeCategory.id);
+    if(found){found.berat_kg=Math.round((found.berat_kg+weight)*100)/100;if(pieces)found.jumlah_pcs+=pieces;}
     else cart.push({
-        kategori_id:activeCategory.id,
+        jenis_sampah_id:activeCategory.id,
         nama:activeCategory.name,
-        berat:weight
+        jumlah_pcs:pieces,
+        berat_kg:weight
     });
     closeWeight();
     renderCart();
@@ -201,8 +196,8 @@ function renderCart() {
     cartEmpty.classList.toggle('hidden',cart.length>0);
     cartList.classList.toggle('hidden',cart.length===0);
     cartCount.textContent=`${cart.length} jenis sampah dipilih`;
-    cartList.innerHTML=cart.map((i,x)=>`<div class="p-4 flex items-center gap-3"><div class="flex-1"><strong>${escapeHtml(i.nama)}</strong><p class="text-xs text-gray-500">Nilai belum ditentukan</p></div><b>${kg(i.berat)} kg</b><button type="button" onclick="cart.splice(${x},1);renderCart()" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div>`).join('');
-    totalWeight.textContent=kg(cart.reduce((s,i)=>s+i.berat,0));
+    cartList.innerHTML=cart.map((i,x)=>`<div class="p-4 flex items-center gap-3"><div class="flex-1"><strong>${escapeHtml(i.nama)}</strong><p class="text-xs text-gray-500">Nilai belum ditentukan</p></div><b>${i.jumlah_pcs?i.jumlah_pcs+' pcs · ':''}${kg(i.berat_kg)} kg</b><button type="button" onclick="cart.splice(${x},1);renderCart()" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div>`).join('');
+    totalWeight.textContent=kg(cart.reduce((s,i)=>s+i.berat_kg,0));
     cartData.value=JSON.stringify(cart);
 }
 async function submitDeposit() {
@@ -215,43 +210,6 @@ async function submitDeposit() {
         depositForm.submit();
     }
 }
-function openQuickCategory() {
-    quickError.classList.add('hidden');
-    quickModal.classList.remove('hidden');
-    quickModal.classList.add('flex');
-}
-function closeQuickCategory() {
-    quickModal.classList.add('hidden');
-    quickModal.classList.remove('flex');
-}
-quickForm.addEventListener(
-    'submit',async e=>{ 
-        e.preventDefault();
-        quickSubmit.disabled=true;
-        quickError.classList.add('hidden');
-        const body=new FormData(quickForm);
-        try {
-            const res=await fetch(@json(route('kategori.quick-store')),{method:'POST',headers:{'Accept':'application/json','X-CSRF-TOKEN':@json(csrf_token())},body});
-            const data=await res.json();
-            if(!res.ok)throw new Error(Object.values(data.errors||{}).flat()[0]||data.message);
-            const k=data.kategori;
-            categories.push({id:k.id,name:k.nama,emissionFactor:k.faktor_emisi?Number(k.faktor_emisi.faktor_kgco2e_per_kg):null});
-            categories.sort((a,b)=>a.name.localeCompare(b.name,'id'));
-            renderCategories();
-            closeQuickCategory();
-            quickForm.reset();
-            showToast('Jenis baru ditambahkan tanpa menghapus keranjang.','success');
-            openWeight(k.id);
-        }
-        catch(err) {
-            quickError.textContent=err.message;
-            quickError.classList.remove('hidden');
-        }
-        finally {
-            quickSubmit.disabled=false;
-        }
-    }
-);
 async function openQr() {
     qrModal.classList.remove('hidden');
     qrModal.classList.add('flex');

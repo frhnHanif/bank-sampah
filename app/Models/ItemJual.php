@@ -29,9 +29,9 @@ class ItemJual extends Model
         return $this->belongsTo(TransaksiJual::class, 'transaksi_jual_id');
     }
 
-    public function kategori()
+    public function jenisSampah()
     {
-        return $this->belongsTo(KategoriSampah::class)->withTrashed();
+        return $this->belongsTo(JenisSampah::class)->withTrashed();
     }
 
     public function alokasi()

@@ -132,7 +132,7 @@
         <tbody>
         @foreach($setoranItems as $item)
             @php $pending=max(0,(float)$item->berat_kg-(float)$item->berat_teralokasi_kg); $realized=$item->alokasi->sum(fn($a)=>(float)$a->nilai_hak_nasabah); @endphp
-            <tr><td>{{ $item->transaksi->tanggal->format('d/m/Y') }}</td><td>{{ $item->kategori?->nama ?? 'Kategori nonaktif' }}</td><td class="text-right">{{ number_format($item->berat_kg,2,',','.') }} kg</td><td class="text-right">{{ number_format($item->berat_teralokasi_kg,2,',','.') }} kg</td><td class="text-right">{{ number_format($pending,2,',','.') }} kg</td><td>{{ $item->status->value }}<br>{{ $realized>0?'Rp '.number_format($realized,0,',','.'):'Nilai belum ditentukan' }}</td></tr>
+            <tr><td>{{ $item->transaksi->tanggal->format('d/m/Y') }}</td><td>{{ $item->jenisSampah?->nama ?? 'Jenis nonaktif' }}</td><td class="text-right">{{ number_format($item->berat_kg,2,',','.') }} kg</td><td class="text-right">{{ number_format($item->berat_teralokasi_kg,2,',','.') }} kg</td><td class="text-right">{{ number_format($pending,2,',','.') }} kg</td><td>{{ $item->status->value }}<br>{{ $realized>0?'Rp '.number_format($realized,0,',','.'):'Nilai belum ditentukan' }}</td></tr>
         @endforeach
         </tbody>
     </table>
@@ -172,7 +172,7 @@
                     </ul>
                     @endif
                     @if($isSettlement && $settlementAllocations->count())
-                    <ul class="item-list">@foreach($settlementAllocations as $allocation)<li>{{ $allocation->itemSetor->kategori?->nama }} - {{ number_format($allocation->berat_kg,2,',','.') }} kg @ Rp {{ number_format($allocation->harga_nasabah_per_kg,0,',','.') }}/kg</li>@endforeach</ul>
+                    <ul class="item-list">@foreach($settlementAllocations as $allocation)<li>{{ $allocation->itemSetor->jenisSampah?->nama }} - {{ number_format($allocation->berat_kg,2,',','.') }} kg @ Rp {{ number_format($allocation->harga_nasabah_per_kg,0,',','.') }}/kg</li>@endforeach</ul>
                     @endif
                 </td>
                 <td class="text-right cr">{{ $isKredit ? 'Rp ' . number_format($m->jumlah, 0, ',', '.') : '-' }}</td>

@@ -23,8 +23,8 @@ class TabunganController extends Controller
         $tahun = (int) $request->query('tahun', 0);
 
         $query = MutasiTabungan::with([
-            'transaksiSetor.items.kategori',
-            'transaksiJual.items.alokasi.itemSetor.kategori',
+            'transaksiSetor.items.jenisSampah',
+            'transaksiJual.items.alokasi.itemSetor.jenisSampah',
             'transaksiJual.items.alokasi.itemSetor.transaksi',
         ])
             ->where('nasabah_id', $id);
@@ -44,8 +44,7 @@ class TabunganController extends Controller
             ->unique()
             ->values();
 
-        $setoranItems = ItemSetor::with(['kategori', 'transaksi', 'alokasi.itemJual.transaksi'])
-            ->where('is_legacy', false)
+        $setoranItems = ItemSetor::with(['jenisSampah', 'transaksi', 'alokasi.itemJual.transaksi'])
             ->whereIn('status', ['PENDING', 'PARTIAL'])
             ->whereHas('transaksi', fn ($query) => $query->where('nasabah_id', $id))
             ->orderByDesc('id')->get();
@@ -145,8 +144,8 @@ class TabunganController extends Controller
         $tahun = (int) $request->query('tahun', 0);
 
         $query = MutasiTabungan::with([
-            'transaksiSetor.items.kategori',
-            'transaksiJual.items.alokasi.itemSetor.kategori',
+            'transaksiSetor.items.jenisSampah',
+            'transaksiJual.items.alokasi.itemSetor.jenisSampah',
             'transaksiJual.items.alokasi.itemSetor.transaksi',
         ])
             ->where('nasabah_id', $id);
@@ -162,8 +161,7 @@ class TabunganController extends Controller
         $labelBulan = ($bulan > 0) ? '_'.$namaBulan[$bulan] : '';
         $labelTahun = ($tahun > 0) ? '_'.$tahun : '';
 
-        $setoranItems = ItemSetor::with(['kategori', 'transaksi', 'alokasi.itemJual.transaksi'])
-            ->where('is_legacy', false)
+        $setoranItems = ItemSetor::with(['jenisSampah', 'transaksi', 'alokasi.itemJual.transaksi'])
             ->whereIn('status', ['PENDING', 'PARTIAL'])
             ->whereHas('transaksi', fn ($query) => $query->where('nasabah_id', $id))
             ->orderByDesc('id')->get();

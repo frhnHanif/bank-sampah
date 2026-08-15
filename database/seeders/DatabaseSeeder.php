@@ -2,32 +2,34 @@
 
 namespace Database\Seeders;
 
-use App\Models\KategoriSampah;
+use App\Models\JenisSampah;
+use App\Models\KelompokMaterial;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
+        User::create([
             'name' => 'Administrator',
-            'email' => 'admin@admin.com',
+            'email' => 'admin@ngudiawilujeng.com',
+            'password' => Hash::make('SeringLupaPassword'),
         ]);
-
-        foreach (['Besi', 'Plastik', 'Kertas', 'Kardus'] as $nama) {
-            KategoriSampah::firstOrCreate(
-                ['nama_normalized' => mb_strtolower($nama)],
-                ['nama' => $nama, 'faktor_emisi_id' => null]
-            );
+        $masters = [
+            'Plastik' => [['Botol Plastik Minuman', 'KG'], ['Galon Plastik', 'PCS']],
+            'Kertas/Karton' => [['Marga', 'KG'], ['Dus Coklat', 'KG'], ['Kardus', 'KG'], ['Kertas', 'KG']],
+            'Logam' => [['Kaleng', 'PCS']], 'Kaca' => [], 'Elektronik' => [['Kipas Angin', 'PCS']], 'Lainnya' => [],
+        ];
+        foreach ($masters as $groupName => $types) {
+            $group = KelompokMaterial::create(['nama' => $groupName, 'nama_normalized' => Str::lower($groupName),
+                'faktor_emisi_kgco2e_per_kg' => null, 'is_active' => true]);
+            foreach ($types as [$name,$unit]) {
+                JenisSampah::create(['kelompok_material_id' => $group->id, 'nama' => $name,
+                    'nama_normalized' => Str::lower($name), 'satuan_pencatatan' => $unit, 'is_active' => true]);
+            }
         }
     }
 }

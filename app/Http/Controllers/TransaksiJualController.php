@@ -27,9 +27,9 @@ class TransaksiJualController extends Controller
         if (! is_array($cart) || $cart === []) {
             throw ValidationException::withMessages(['cart_data' => 'Keranjang penjualan masih kosong.']);
         }
-        $ids = array_column($cart, 'kategori_id');
+        $ids = array_column($cart, 'jenis_sampah_id');
         if (count($ids) !== count(array_unique($ids))) {
-            throw ValidationException::withMessages(['cart_data' => 'Satu kategori hanya boleh muncul sekali dalam penjualan.']);
+            throw ValidationException::withMessages(['cart_data' => 'Satu jenis sampah hanya boleh muncul sekali dalam penjualan.']);
         }
 
         try {
@@ -51,7 +51,7 @@ class TransaksiJualController extends Controller
                 $nasabah = $allocations->first()->itemSetor->transaksi->nasabah;
                 $details = $allocations->map(fn ($allocation) => sprintf(
                     '- %s: %s kg x Rp %s = Rp %s',
-                    $allocation->itemJual->kategori->nama,
+                    $allocation->itemJual->jenisSampah->nama,
                     number_format((float) $allocation->berat_kg, 2, ',', '.'),
                     number_format((float) $allocation->harga_nasabah_per_kg, 0, ',', '.'),
                     number_format((float) $allocation->nilai_hak_nasabah, 0, ',', '.')
@@ -61,8 +61,8 @@ class TransaksiJualController extends Controller
                 if (str_starts_with($phone, '0')) {
                     $phone = '62'.substr($phone, 1);
                 }
-                $message = "*[SETTLEMENT BANK SAMPAH]*\n\nHalo *{$nasabah->nama}*,\n\nSebagian/seluruh setoran Anda telah terjual.\n{$details}\n\n"
-                    .'Nilai masuk tabungan: Rp '.number_format($amount, 0, ',', '.')."\nTanggal settlement: {$sale->tanggal->format('d-m-Y')}\n\nTerima kasih.";
+                $message = "*[HASIL PENJUALAN SAMPAH]*\n\nHalo *{$nasabah->nama}*,\n\nSebagian/seluruh setoran Anda telah terjual.\n{$details}\n\n"
+                    .'Uang masuk tabungan: Rp '.number_format($amount, 0, ',', '.')."\nTanggal penjualan: {$sale->tanggal->format('d-m-Y')}\n\nTerima kasih.";
 
                 return ['name' => $nasabah->nama, 'url' => "https://wa.me/{$phone}?text=".urlencode($message)];
             })->values()->all();

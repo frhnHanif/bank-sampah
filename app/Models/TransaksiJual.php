@@ -14,7 +14,6 @@ class TransaksiJual extends Model
     {
         return [
             'tanggal' => 'date',
-            'flow_version' => 'integer',
             'total_nilai' => 'decimal:2',
             'total_hak_nasabah' => 'decimal:2',
             'total_cost_basis' => 'decimal:2',

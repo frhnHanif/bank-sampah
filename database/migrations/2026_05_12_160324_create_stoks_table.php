@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('stok', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('kategori_id')->constrained('kategori_sampah')->cascadeOnDelete();
+            $table->foreignId('jenis_sampah_id')->unique()->constrained('jenis_sampah')->restrictOnDelete();
             $table->decimal('total_berat_kg', 10, 2)->default(0);
             $table->timestamps();
         });

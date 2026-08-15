@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\FaktorEmisiController;
-use App\Http\Controllers\KategoriSampahController;
+use App\Http\Controllers\JenisSampahController;
+use App\Http\Controllers\KelompokMaterialController;
 use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\KonfigurasiController;
 use App\Http\Controllers\NasabahAuthController;
@@ -43,8 +43,7 @@ Route::middleware('nasabah.access')->group(function () {
 
 Route::middleware('auth')->group(function () {
 
-    Route::resource('kategori', KategoriSampahController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::post('/kategori/quick-create', [KategoriSampahController::class, 'quickStore'])->name('kategori.quick-store');
+    Route::resource('jenis-sampah', JenisSampahController::class)->parameters(['jenis-sampah' => 'jenisSampah'])->only(['index', 'store', 'update', 'destroy']);
     Route::resource('nasabah', NasabahController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('setor', TransaksiSetorController::class)->only(['index', 'create', 'store']);
     Route::post('/nasabah/{id}/tabungan/tarik', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
@@ -61,10 +60,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/konfigurasi/pin/logout', [KonfigurasiController::class, 'logoutPin'])->name('konfigurasi.pin.logout');
 
     Route::middleware('admin.pin')->group(function () {
-        Route::get('/faktor-emisi', [FaktorEmisiController::class, 'index'])->name('faktor-emisi.index');
-        Route::post('/faktor-emisi', [FaktorEmisiController::class, 'store'])->name('faktor-emisi.store');
-        Route::put('/faktor-emisi/{faktorEmisi}', [FaktorEmisiController::class, 'update'])->name('faktor-emisi.update');
-        Route::patch('/faktor-emisi/{faktorEmisi}/toggle', [FaktorEmisiController::class, 'toggle'])->name('faktor-emisi.toggle');
+        Route::get('/kelompok-material', [KelompokMaterialController::class, 'index'])->name('kelompok-material.index');
+        Route::post('/kelompok-material', [KelompokMaterialController::class, 'store'])->name('kelompok-material.store');
+        Route::put('/kelompok-material/{kelompokMaterial}', [KelompokMaterialController::class, 'update'])->name('kelompok-material.update');
+        Route::patch('/kelompok-material/{kelompokMaterial}/toggle', [KelompokMaterialController::class, 'toggle'])->name('kelompok-material.toggle');
         Route::get('/konfigurasi', [KonfigurasiController::class, 'index'])->name('konfigurasi.index');
         Route::put('/konfigurasi/settings', [KonfigurasiController::class, 'updateSettings'])->name('konfigurasi.settings.update');
         Route::post('/konfigurasi/users', [KonfigurasiController::class, 'storeUser'])->name('konfigurasi.users.store');

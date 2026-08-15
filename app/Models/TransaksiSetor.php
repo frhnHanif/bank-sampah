@@ -12,7 +12,7 @@ class TransaksiSetor extends Model
 
     protected function casts(): array
     {
-        return ['tanggal' => 'date', 'flow_version' => 'integer'];
+        return ['tanggal' => 'date'];
     }
 
     public function nasabah()

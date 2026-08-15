@@ -56,7 +56,7 @@
                     <span class="w-11 h-11 shrink-0 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center text-sm"><i class="fa-solid fa-recycle"></i></span>
                     <div class="flex-1 min-w-0">
                         <p class="text-[10px] leading-none text-gray-400 font-bold tracking-wide">{{ $item->transaksi->tanggal->format('d/m/Y') }}</p>
-                        <h3 class="font-black text-gray-800 truncate mt-1.5 leading-tight">{{ $item->kategori?->nama ?? 'Kategori nonaktif' }}</h3>
+                        <h3 class="font-black text-gray-800 truncate mt-1.5 leading-tight">{{ $item->jenisSampah?->nama ?? 'Jenis nonaktif' }}</h3>
                     </div>
                     <span class="shrink-0 inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black px-2.5 py-1.5 rounded-full {{ $status==='PARTIAL'?'bg-amber-100 text-amber-700':'bg-gray-100 text-gray-600' }}"><i class="fa-solid {{ $status==='PARTIAL'?'fa-chart-pie':'fa-clock' }}"></i>{{ $status==='PARTIAL'?'SEBAGIAN':'MENUNGGU' }}</span>
                 </div>
@@ -141,7 +141,7 @@
                             <div class="space-y-1 mt-2">
                                 @foreach($items as $item)
                                 <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-1.5">
-                                    <span class="font-medium text-gray-700 truncate max-w-[180px]">{{ $item->kategori ? $item->kategori->nama : '—' }}</span>
+                                    <span class="font-medium text-gray-700 truncate max-w-[180px]">{{ $item->jenisSampah?->nama ?? '—' }}</span>
                                     <span class="whitespace-nowrap">{{ number_format($item->berat_kg, 2, ',', '.') }} kg</span>
                                     <span class="whitespace-nowrap ml-auto font-semibold text-gray-600">Rp {{ number_format($item->nilai, 0, ',', '.') }}</span>
                                 </div>
@@ -153,7 +153,7 @@
                             <div class="space-y-1 mt-2">
                                 @foreach($settlementAllocations as $allocation)
                                 <div class="flex flex-wrap gap-2 text-xs bg-emerald-50 text-emerald-800 rounded-lg px-3 py-1.5">
-                                    <span class="font-bold">{{ $allocation->itemSetor->kategori?->nama }}</span>
+                                    <span class="font-bold">{{ $allocation->itemSetor->jenisSampah?->nama }}</span>
                                     <span>{{ number_format($allocation->berat_kg,2,',','.') }} kg</span>
                                     <span>@ Rp {{ number_format($allocation->harga_nasabah_per_kg,0,',','.') }}/kg</span>
                                 </div>
