@@ -88,6 +88,23 @@ class SettlementFlowTest extends TestCase
         $this->actingAs($user)->get('/jenis-sampah')->assertOk()->assertSee('Kelompok Material');
     }
 
+    public function test_dashboard_counts_deposit_emissions_before_any_sale(): void
+    {
+        [$customer,$paper,,$group] = $this->fixtures();
+        $group->update(['faktor_emisi_kgco2e_per_kg' => 2.5]);
+        app(SetoranService::class)->create($customer->id, now()->toDateString(), [
+            ['jenis_sampah_id' => $paper->id, 'berat_kg' => 4],
+        ]);
+
+        $this->assertDatabaseCount('transaksi_jual', 0);
+        $this->get('/')
+            ->assertOk()
+            ->assertViewHas('totalCO2', fn ($value) => (float) $value === 10.0)
+            ->assertViewHas('co2BulanIni', fn ($value) => (float) $value === 10.0)
+            ->assertViewHas('co2PerKategori', fn ($rows) => (float) $rows->first()->total_co2 === 10.0)
+            ->assertViewHas('topKontributor', fn ($rows) => (float) $rows->first()->total_co2 === 10.0);
+    }
+
     public function test_customer_account_number_uses_rt_rw_and_four_digit_id(): void
     {
         $user = User::create(['name' => 'Admin', 'email' => 'account@example.com', 'password' => 'secret']);

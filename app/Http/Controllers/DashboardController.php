@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AlokasiPenjualan;
 use App\Models\ItemJual;
 use App\Models\ItemSetor;
 use App\Models\MutasiKas;
@@ -22,13 +21,13 @@ class DashboardController extends Controller
         $totalSampah = (float) ItemSetor::sum('berat_kg');
         $totalTersalurkan = (float) ItemJual::sum('berat_kg');
         $pendingWeight = (float) ItemSetor::selectRaw('COALESCE(SUM(berat_kg - berat_teralokasi_kg), 0) AS total')->value('total');
-        $unclassifiedWeight = (float) AlokasiPenjualan::where('co2_status', 'PENDING')->sum('berat_kg');
+        $unclassifiedWeight = $this->depositWeightWithoutEmissionFactor();
 
         $sampahBulanIni = $this->depositWeightForMonth($now);
         $sampahBulanLalu = $this->depositWeightForMonth($lastMonth);
         $trenSampah = $sampahBulanLalu > 0 ? (($sampahBulanIni - $sampahBulanLalu) / $sampahBulanLalu) * 100 : 0;
 
-        $totalCO2 = (float) AlokasiPenjualan::where('co2_status', 'REALIZED')->sum('co2_terealisasi');
+        $totalCO2 = $this->depositEmissionQuery()->sum(DB::raw('item_setor.berat_kg * kelompok_material.faktor_emisi_kgco2e_per_kg'));
         $co2BulanIni = $this->co2ForMonth($now);
         $co2BulanLalu = $this->co2ForMonth($lastMonth);
         $trenCO2 = $co2BulanLalu > 0 ? (($co2BulanIni - $co2BulanLalu) / $co2BulanLalu) * 100 : 0;
@@ -52,7 +51,7 @@ class DashboardController extends Controller
             'rt' => $rt, 'total_co2' => $rows->sum('total_co2'),
         ])->sortByDesc('total_co2')->values();
         $maxRT = $reduksiPerRT->max('total_co2') ?: 1;
-        $topKontributor = $contributors->sortByDesc('total_co2')->take(5)->values();
+        $topKontributor = $this->environmentalContributors($now)->take(5)->values();
 
         $namaBulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
         $co2Bulanan = collect(range(5, 0))->map(function ($offset) use ($now, $namaBulan) {
@@ -86,28 +85,51 @@ class DashboardController extends Controller
 
     private function co2ForMonth(Carbon $month): float
     {
-        $realized = (float) AlokasiPenjualan::where('co2_status', 'REALIZED')
-            ->whereHas('itemJual.transaksi', fn ($q) => $q
-                ->whereYear('tanggal', $month->year)->whereMonth('tanggal', $month->month))
-            ->sum('co2_terealisasi');
-
-        return $realized;
+        return (float) $this->depositEmissionQuery()
+            ->whereYear('transaksi_setor.tanggal', $month->year)
+            ->whereMonth('transaksi_setor.tanggal', $month->month)
+            ->sum(DB::raw('item_setor.berat_kg * kelompok_material.faktor_emisi_kgco2e_per_kg'));
     }
 
-    private function environmentalContributors()
+    private function depositEmissionQuery()
     {
-        return DB::table('alokasi_penjualan')->join('item_setor', 'item_setor.id', '=', 'alokasi_penjualan.item_setor_id')
+        return DB::table('item_setor')
             ->join('transaksi_setor', 'transaksi_setor.id', '=', 'item_setor.transaksi_setor_id')
-            ->join('nasabah', 'nasabah.id', '=', 'transaksi_setor.nasabah_id')->where('alokasi_penjualan.co2_status', 'REALIZED')
-            ->select('nasabah.id', 'nasabah.nama', 'nasabah.rt', 'nasabah.rw', DB::raw('SUM(alokasi_penjualan.co2_terealisasi) AS total_co2'))
-            ->groupBy('nasabah.id', 'nasabah.nama', 'nasabah.rt', 'nasabah.rw')->get();
+            ->join('jenis_sampah', 'jenis_sampah.id', '=', 'item_setor.jenis_sampah_id')
+            ->join('kelompok_material', 'kelompok_material.id', '=', 'jenis_sampah.kelompok_material_id')
+            ->whereNotNull('kelompok_material.faktor_emisi_kgco2e_per_kg');
+    }
+
+    private function depositWeightWithoutEmissionFactor(): float
+    {
+        return (float) DB::table('item_setor')
+            ->join('jenis_sampah', 'jenis_sampah.id', '=', 'item_setor.jenis_sampah_id')
+            ->join('kelompok_material', 'kelompok_material.id', '=', 'jenis_sampah.kelompok_material_id')
+            ->whereNull('kelompok_material.faktor_emisi_kgco2e_per_kg')
+            ->sum('item_setor.berat_kg');
+    }
+
+    private function environmentalContributors(?Carbon $month = null)
+    {
+        $query = $this->depositEmissionQuery()
+            ->join('nasabah', 'nasabah.id', '=', 'transaksi_setor.nasabah_id');
+
+        if ($month) {
+            $query->whereYear('transaksi_setor.tanggal', $month->year)
+                ->whereMonth('transaksi_setor.tanggal', $month->month);
+        }
+
+        return $query
+            ->select('nasabah.id', 'nasabah.nama', 'nasabah.rt', 'nasabah.rw', DB::raw('SUM(item_setor.berat_kg * kelompok_material.faktor_emisi_kgco2e_per_kg) AS total_co2'))
+            ->groupBy('nasabah.id', 'nasabah.nama', 'nasabah.rt', 'nasabah.rw')
+            ->orderByDesc('total_co2')
+            ->get();
     }
 
     private function environmentalByCategory()
     {
-        return DB::table('alokasi_penjualan')->join('item_jual', 'item_jual.id', '=', 'alokasi_penjualan.item_jual_id')
-            ->join('jenis_sampah', 'jenis_sampah.id', '=', 'item_jual.jenis_sampah_id')->where('alokasi_penjualan.co2_status', 'REALIZED')
-            ->select('jenis_sampah.id', 'jenis_sampah.nama', DB::raw('SUM(alokasi_penjualan.co2_terealisasi) AS total_co2'))
+        return $this->depositEmissionQuery()
+            ->select('jenis_sampah.id', 'jenis_sampah.nama', DB::raw('SUM(item_setor.berat_kg * kelompok_material.faktor_emisi_kgco2e_per_kg) AS total_co2'))
             ->groupBy('jenis_sampah.id', 'jenis_sampah.nama')->orderByDesc('total_co2')->get();
     }
 }

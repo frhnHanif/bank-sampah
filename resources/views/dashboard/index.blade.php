@@ -55,7 +55,7 @@
                 <h3 class="text-2xl font-black text-amber-700">{{ number_format($pendingWeight, 2, ',', '.') }}</h3>
                 <span class="text-sm font-bold text-gray-400">kg</span>
             </div>
-            <p class="text-[10px] font-bold mt-2 text-amber-600">{{ number_format($unclassifiedWeight, 2, ',', '.') }} kg terjual menunggu klasifikasi emisi</p>
+            <p class="text-[10px] font-bold mt-2 text-amber-600">{{ number_format($unclassifiedWeight, 2, ',', '.') }} kg setoran belum memiliki faktor emisi</p>
         </div>
 
         <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
@@ -68,9 +68,9 @@
         </div>
     </div>
 
-    <!-- <div class="bg-sky-50 border border-sky-200 text-sky-800 rounded-xl px-4 py-3 text-xs mb-8">
-        Emisi kgCO₂e diakui pada tanggal penjualan dan memakai snapshot faktor kelompok material.
-    </div> -->
+    <div class="bg-sky-50 border border-sky-200 text-sky-800 rounded-xl px-4 py-3 text-xs mb-8">
+        Estimasi dampak lingkungan diakui saat setoran diterima dan dihitung dari berat setoran × faktor kelompok material. Penjualan tidak menambah dampak kedua kali.
+    </div>
 
     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Target & Dampak CO₂ — Fokus CSR</p>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -191,7 +191,7 @@
                         <text x="{{ $svgWidth / 2 }}" y="{{ $svgHeight / 2 }}" fill="#9ca3af" font-size="12" text-anchor="middle" font-family="Inter, sans-serif">Belum ada data</text>
                     @endif
                 </svg>
-                <div class="text-[11px] text-gray-400 font-bold mt-2">Satuan: kg CO₂ ter-offset per bulan</div>
+                <div class="text-[11px] text-gray-400 font-bold mt-2">Satuan: kgCO₂e dari setoran yang diterima per bulan</div>
             </div>
         </div>
 
