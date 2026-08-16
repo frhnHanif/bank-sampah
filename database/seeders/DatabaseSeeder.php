@@ -31,5 +31,7 @@ class DatabaseSeeder extends Seeder
                     'nama_normalized' => Str::lower($name), 'satuan_pencatatan' => $unit, 'is_active' => true]);
             }
         }
+
+        $this->call(EmissionFactorSeeder::class);
     }
 }
