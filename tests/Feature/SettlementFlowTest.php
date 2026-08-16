@@ -88,6 +88,32 @@ class SettlementFlowTest extends TestCase
         $this->actingAs($user)->get('/jenis-sampah')->assertOk()->assertSee('Kelompok Material');
     }
 
+    public function test_customer_account_number_uses_rt_rw_and_four_digit_id(): void
+    {
+        $user = User::create(['name' => 'Admin', 'email' => 'account@example.com', 'password' => 'secret']);
+
+        $this->actingAs($user)->post('/nasabah', [
+            'nama' => 'Nasabah Format',
+            'rt' => '3',
+            'rw' => '1',
+            'no_hp' => '08123456789',
+        ])->assertRedirect(route('nasabah.index'));
+
+        $customer = Nasabah::where('nama', 'Nasabah Format')->firstOrFail();
+        $this->assertSame('003001'.str_pad((string) $customer->id, 4, '0', STR_PAD_LEFT), $customer->kode);
+        $this->assertSame('003', $customer->rt);
+        $this->assertSame('001', $customer->rw);
+
+        $this->actingAs($user)->put("/nasabah/{$customer->id}", [
+            'nama' => $customer->nama,
+            'rt' => '12',
+            'rw' => '7',
+            'no_hp' => $customer->no_hp,
+        ])->assertRedirect();
+
+        $this->assertSame('012007'.str_pad((string) $customer->id, 4, '0', STR_PAD_LEFT), $customer->fresh()->kode);
+    }
+
     private function fixtures(): array
     {
         $group = KelompokMaterial::create(['nama' => 'Kertas/Karton', 'nama_normalized' => 'kertas/karton', 'is_active' => true]);

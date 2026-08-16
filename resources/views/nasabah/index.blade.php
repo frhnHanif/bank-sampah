@@ -108,7 +108,7 @@
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <div>
                 <h3 class="font-bold text-gray-800">Daftarkan Nasabah Baru</h3>
-                <p class="text-[10px] text-gray-500">Kode nasabah akan di-generate otomatis.</p>
+                <p class="text-[10px] text-gray-500">Nomor rekening otomatis: RT + RW + ID (contoh 0030010001).</p>
             </div>
             <button type="button" onclick="tutupModalCreate()" class="text-gray-400 hover:text-red-500 transition-colors">
                 <i class="fa-solid fa-xmark text-lg"></i>
