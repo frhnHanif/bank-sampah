@@ -9,7 +9,7 @@
             <p class="text-gray-500 text-sm font-medium mt-1">Kelola akun pengurus bank sampah.</p>
         </div>
         <div class="flex items-center gap-3">
-            <button onclick="toggleModal('modalKonstanta', true)" class="text-xs font-bold text-gray-500 hover:text-emerald-600 bg-gray-50 hover:bg-emerald-50 border border-gray-200 px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
+            <button onclick="toggleModal('modalKonstanta', true)" class="text-xs font-bold text-gray-500 hover:text-emerald-600 bg-gray-50 hover:bg-emerald-50 border border-gray-200 px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-gray-300 focus-visible:ring-offset-2">
                 <i class="fa-solid fa-sliders"></i> Konstanta
             </button>
             <a href="{{ route('konfigurasi.pin.logout') }}" 
@@ -39,7 +39,7 @@
         </div>
 
         <div class="px-5 pt-4">
-            <button onclick="toggleModal('modalTambah', true)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5">
+            <button onclick="toggleModal('modalTambah', true)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300 focus-visible:ring-offset-2">
                 <i class="fa-solid fa-plus"></i> Tambah Akun
             </button>
         </div>
@@ -63,7 +63,7 @@
                         <td class="py-3 text-right">
                             <div class="flex items-center justify-end gap-1.5">
                                 <button onclick="editUser({{ $user->id }}, '{{ addslashes($user->name) }}', '{{ addslashes($user->email) }}')"
-                                        class="text-xs font-bold text-gray-500 hover:text-emerald-600 bg-gray-50 hover:bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors">
+                                        class="text-xs font-bold text-gray-500 hover:text-emerald-600 bg-gray-50 hover:bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-gray-300 focus-visible:ring-offset-2">
                                     <i class="fa-solid fa-pen-to-square"></i> Edit
                                 </button>
                                 <form action="{{ route('konfigurasi.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Hapus akun {{ addslashes($user->name) }}?')">
@@ -89,11 +89,11 @@
 </div>
 
 {{-- ==================== MODAL TAMBAH AKUN ==================== --}}
-<div id="modalTambah" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+<div id="modalTambah" data-keyboard-modal class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between mb-5">
             <h4 class="font-bold text-gray-800 text-base">Tambah Akun Pengurus</h4>
-            <button onclick="toggleModal('modalTambah', false)" class="text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>
+            <button data-modal-dismiss onclick="toggleModal('modalTambah', false)" class="text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>
         </div>
         <form action="{{ route('konfigurasi.users.store') }}" method="POST">
             @csrf
@@ -120,11 +120,11 @@
 </div>
 
 {{-- ==================== MODAL EDIT AKUN ==================== --}}
-<div id="modalEdit" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+<div id="modalEdit" data-keyboard-modal class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between mb-5">
             <h4 class="font-bold text-gray-800 text-base">Edit Akun Pengurus</h4>
-            <button onclick="toggleModal('modalEdit', false)" class="text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>
+            <button data-modal-dismiss onclick="toggleModal('modalEdit', false)" class="text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>
         </div>
         <form id="formEdit" method="POST">
             @csrf @method('PUT')
@@ -151,7 +151,7 @@
 </div>
 
 {{-- ==================== MODAL KONSTANTA ==================== --}}
-<div id="modalKonstanta" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+<div id="modalKonstanta" data-keyboard-modal class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()">
         <div class="p-6">
             <div class="flex items-center justify-between mb-5">
@@ -159,7 +159,7 @@
                     <h4 class="font-bold text-gray-800 text-base">Konstanta Ekuivalen CO₂</h4>
                     <p class="text-xs text-gray-400 mt-0.5">Nilai default sesuai standar ilmiah</p>
                 </div>
-                <button onclick="toggleModal('modalKonstanta', false)" class="text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>
+                <button data-modal-dismiss onclick="toggleModal('modalKonstanta', false)" class="text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>
             </div>
             <form action="{{ route('konfigurasi.settings.update') }}" method="POST">
                 @csrf @method('PUT')

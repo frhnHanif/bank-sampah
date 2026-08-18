@@ -3,7 +3,7 @@
 @section('content')
 <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-4 mb-6">
     <div><h1 class="text-2xl font-black text-gray-800">Stok Sampah</h1><p class="text-sm text-gray-500">Pantau sisa stok dan jumlah yang sudah terjual.</p></div>
-    <button type="button" onclick="openSale()" class="bg-amber-500 hover:bg-amber-600 text-white rounded-xl px-5 py-3 font-black"><i class="fa-solid fa-truck-ramp-box mr-2"></i>Jual ke Pengepul</button>
+    <button type="button" onclick="openSale()" class="bg-amber-500 hover:bg-amber-600 text-white rounded-xl px-5 py-3 font-black focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 focus-visible:ring-offset-2"><i class="fa-solid fa-truck-ramp-box mr-2"></i>Jual ke Pengepul</button>
 </div>
 @if(session('success'))<div class="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-xl mb-5">{{ session('success') }}</div>@endif
 @if($errors->any())<div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-5"><ul class="list-disc list-inside">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
@@ -47,11 +47,11 @@
 }
 </style>
 
-<div id="saleModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-gray-900/50 backdrop-blur-sm px-4 pt-24 pb-24 lg:px-5 lg:pt-24 lg:pb-5 opacity-0 transition-opacity duration-300">
+<div id="saleModal" data-keyboard-modal class="fixed inset-0 z-40 hidden items-center justify-center bg-gray-900/50 backdrop-blur-sm px-4 pt-24 pb-24 lg:px-5 lg:pt-24 lg:pb-5 opacity-0 transition-opacity duration-300">
     <div id="saleModalBox" class="bg-white rounded-2xl w-full max-w-6xl max-h-full shadow-2xl overflow-hidden flex flex-col transform scale-95 transition-transform duration-300">
         <div class="shrink-0 px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
             <div><h2 class="font-bold text-gray-800">Penjualan Sampah</h2><p class="text-[10px] text-gray-500 mt-0.5">Masukkan berat dan harga saat sampah dijual ke pengepul.</p></div>
-            <button type="button" onclick="closeSale()" class="text-gray-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <button type="button" data-modal-dismiss onclick="closeSale()" class="text-gray-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
         <form id="saleForm" action="{{ route('jual.store') }}" method="POST" class="flex-1 min-h-0 overflow-y-auto bg-gray-50 p-4 sm:p-6">@csrf<input type="hidden" name="cart_data" id="saleCartData">
             <div class="grid lg:grid-cols-12 gap-5">
@@ -71,7 +71,7 @@
                 <div class="lg:col-span-7 bg-white border border-gray-100 rounded-2xl overflow-hidden flex flex-col shadow-sm min-h-80 lg:min-h-[480px]">
                     <div class="p-4 border-b border-gray-100 flex items-center justify-between"><div><h3 class="font-black text-gray-800">Rincian Penjualan</h3><p class="text-xs text-gray-400"><span id="saleItemCount">0</span> jenis sampah</p></div><span class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 grid place-items-center"><i class="fa-solid fa-receipt"></i></span></div>
                     <div id="saleCart" class="p-4 space-y-3 flex-1 overflow-y-auto"></div>
-                    <div class="bg-gray-900 text-white p-5 grid grid-cols-3 sm:grid-cols-4 gap-4 items-center"><div><small class="text-gray-400">Penerimaan</small><strong class="block text-amber-400" id="cartRevenue">Rp 0</strong></div><div><small class="text-gray-400">Hak nasabah</small><strong class="block" id="cartRights">Rp 0</strong></div><div><small class="text-gray-400">Margin</small><strong class="block" id="cartMargin">Rp 0</strong></div><button id="saleSubmit" type="button" onclick="submitSale()" class="col-span-3 sm:col-span-1 bg-amber-500 hover:bg-amber-400 text-gray-900 rounded-xl py-3 font-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed">Proses Penjualan</button></div>
+                    <div class="bg-gray-900 text-white p-5 grid grid-cols-3 sm:grid-cols-4 gap-4 items-center"><div><small class="text-gray-400">Penerimaan</small><strong class="block text-amber-400" id="cartRevenue">Rp 0</strong></div><div><small class="text-gray-400">Hak nasabah</small><strong class="block" id="cartRights">Rp 0</strong></div><div><small class="text-gray-400">Margin</small><strong class="block" id="cartMargin">Rp 0</strong></div><button id="saleSubmit" type="button" data-modal-submit onclick="submitSale()" class="col-span-3 sm:col-span-1 bg-amber-500 hover:bg-amber-400 text-gray-900 rounded-xl py-3 font-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed">Proses Penjualan</button></div>
                 </div>
             </div>
         </form>
@@ -79,7 +79,7 @@
 </div>
 
 @if(session('settlement_wa'))
-<div class="fixed bottom-5 right-5 z-[150] bg-white border shadow-xl rounded-2xl p-4 max-w-sm"><strong class="block mb-2">Kirim ringkasan penjualan</strong><div class="space-y-2">@foreach(session('settlement_wa') as $wa)<a target="_blank" href="{{ $wa['url'] }}" class="block bg-emerald-600 text-white rounded-xl px-4 py-2 text-sm font-bold"><i class="fa-brands fa-whatsapp mr-2"></i>{{ $wa['name'] }}</a>@endforeach</div></div>
+<div class="fixed bottom-5 right-5 z-[150] bg-white border border-gray-100 shadow-xl rounded-2xl p-4 max-w-sm"><strong class="block mb-2">Kirim ringkasan penjualan</strong><div class="space-y-2">@foreach(session('settlement_wa') as $wa)<a target="_blank" href="{{ $wa['url'] }}" class="block bg-emerald-600 text-white rounded-xl px-4 py-2 text-sm font-bold"><i class="fa-brands fa-whatsapp mr-2"></i>{{ $wa['name'] }}</a>@endforeach</div></div>
 @endif
 
 @push('scripts')

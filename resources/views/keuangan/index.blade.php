@@ -6,7 +6,7 @@
         <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Buku Kas & Keuangan</h1>
         <p class="text-sm text-gray-500 font-medium">Pisahkan kas aktual, kewajiban tabungan, margin, dan biaya operasional.</p>
     </div>
-    <button type="button" onclick="bukaModalOperasional()" class="bg-amber-500 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-amber-600 transition shadow-sm flex items-center gap-2 w-full sm:w-auto justify-center">
+    <button type="button" onclick="bukaModalOperasional()" class="bg-amber-500 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-amber-600 transition shadow-sm flex items-center gap-2 w-full sm:w-auto justify-center focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 focus-visible:ring-offset-2">
         <i class="fa-solid fa-file-invoice-dollar"></i> Catat Operasional
     </button>
 </div>
@@ -79,7 +79,7 @@
                 $labelTahun = $tahun > 0 ? $tahun : 'Semua Tahun';
                 $labelFilter = ($bulan > 0 || $tahun > 0) ? $labelBulan . ' ' . $labelTahun : 'Semua Waktu';
             @endphp
-            <button type="button" onclick="bukaModalFilterBulan()" class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-600 hover:border-amber-300 focus:ring-2 focus:ring-amber-500 outline-none flex items-center gap-2 transition-colors">
+            <button type="button" onclick="bukaModalFilterBulan()" class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-600 hover:border-amber-300 flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 focus-visible:ring-offset-2">
                 <i class="fa-solid fa-calendar text-amber-400"></i> {{ $labelFilter }}
             </button>
 
@@ -175,12 +175,12 @@
 
 </div>
 
-<div id="modalOperasional" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
+<div id="modalOperasional" data-keyboard-modal class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
     <div class="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300" id="modalOperasionalBox">
         
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <h3 class="font-bold text-gray-800">Catat Pengeluaran Operasional</h3>
-            <button type="button" onclick="tutupModalOperasional()" class="text-gray-400 hover:text-red-500 transition-colors">
+            <button type="button" data-modal-dismiss onclick="tutupModalOperasional()" class="text-gray-400 hover:text-red-500 transition-colors">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
         </div>
@@ -219,11 +219,11 @@
     </div>
 </div>
 
-<div id="modalFilterBulan" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
+<div id="modalFilterBulan" data-keyboard-modal class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
     <div class="bg-white rounded-2xl w-full max-w-xs mx-4 overflow-hidden transform scale-95 transition-transform duration-300 shadow-xl" id="modalFilterBulanBox">
         <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-calendar mr-2 text-amber-500"></i>Filter Waktu</h3>
-            <button type="button" onclick="tutupModalFilterBulan()" class="text-gray-400 hover:text-red-500 transition-colors">
+            <button type="button" data-modal-dismiss onclick="tutupModalFilterBulan()" class="text-gray-400 hover:text-red-500 transition-colors">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>

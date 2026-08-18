@@ -40,7 +40,7 @@
                         <label class="text-xs font-black text-gray-400 uppercase">Nasabah</label>
                         <div id="customerSearchWrap" class="relative mt-2 flex gap-2">
                             <input id="customerSearch" autocomplete="off" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Cari nama atau kode nasabah">
-                            <button type="button" onclick="openQr()" class="w-12 shrink-0 rounded-xl border border-gray-200 text-emerald-600 hover:bg-emerald-50" title="Pindai QR"><i class="fa-solid fa-qrcode"></i></button>
+                            <button type="button" onclick="openQr()" class="w-12 shrink-0 rounded-xl border border-gray-200 text-emerald-600 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300 focus-visible:ring-offset-2" title="Pindai QR"><i class="fa-solid fa-qrcode"></i></button>
                             <div id="customerResults" class="hidden absolute top-full left-0 right-14 mt-2 z-30 bg-white border border-gray-100 rounded-xl shadow-xl max-h-56 overflow-auto"></div>
                         </div>
                         <div id="selectedCustomer" class="hidden mt-3 bg-emerald-50 border border-emerald-200 p-4 rounded-xl items-center gap-3">
@@ -68,7 +68,7 @@
                         <p class="font-bold text-gray-600">Belum ada sampah</p>
                         <p class="mt-1 text-xs">Pilih jenis sampah untuk mulai menimbang.</p>
                     </div>
-                    <div id="cartList" class="hidden divide-y"></div>
+                    <div id="cartList" class="hidden divide-y-0"></div>
                     <div class="space-y-4 bg-gray-50 p-5">
                         <div class="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-3.5">
                             <div><span class="block text-xs font-bold uppercase tracking-wide text-gray-400">Total berat</span><span class="mt-1 block text-xs text-gray-500">Seluruh setoran</span></div>
@@ -82,20 +82,20 @@
     </form>
 </div>
 
-<div id="weightModal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-gray-900/50 p-4">
+<div id="weightModal" data-keyboard-modal class="fixed inset-0 z-[120] hidden items-center justify-center bg-gray-900/50 p-4">
     <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
         <h3 class="font-black text-lg" id="weightTitle"></h3><p class="text-sm text-gray-500 mt-1" id="weightHelp">Masukkan berat hasil penimbangan.</p>
         <div id="piecesWrap" class="hidden"><label class="block text-xs font-black text-gray-400 uppercase mt-5">Jumlah (pcs)</label><input id="piecesInput" type="number" min="1" step="1" class="mt-2 w-full border rounded-xl px-4 py-3 text-xl text-center" placeholder="0"></div>
         <label class="block text-xs font-black text-gray-400 uppercase mt-5" id="weightLabel">Berat (kg)</label>
         <input id="weightInput" type="number" min="0.01" step="0.01" class="mt-2 w-full border border-emerald-300 rounded-xl px-4 py-3 text-xl text-center outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0,00">
-        <div class="flex gap-3 mt-5"><button type="button" onclick="closeWeight()" class="flex-1 bg-gray-100 py-3 rounded-xl font-bold">Batal</button><button type="button" onclick="addWeight()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold">Tambahkan</button></div>
+        <div class="flex gap-3 mt-5"><button type="button" data-modal-dismiss onclick="closeWeight()" class="flex-1 bg-gray-100 py-3 rounded-xl font-bold">Batal</button><button type="button" data-modal-submit onclick="addWeight()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold">Tambahkan</button></div>
     </div>
 </div>
 
-<div id="qrModal" class="fixed inset-0 z-[130] hidden items-center justify-center bg-gray-900/70 p-4"><div class="bg-white rounded-2xl p-5 w-full max-w-md"><div class="flex justify-between mb-3"><strong>Pindai QR Nasabah</strong><button type="button" onclick="closeQr()"><i class="fa-solid fa-xmark"></i></button></div><video id="qrVideo" playsinline class="w-full h-64 bg-black rounded-xl object-cover"></video><canvas id="qrCanvas" class="hidden"></canvas><p id="qrStatus" class="text-sm text-gray-500 mt-3 text-center">Arahkan kamera ke QR ID Card.</p></div></div>
+<div id="qrModal" data-keyboard-modal class="fixed inset-0 z-[130] hidden items-center justify-center bg-gray-900/70 p-4"><div class="bg-white rounded-2xl p-5 w-full max-w-md"><div class="flex justify-between mb-3"><strong>Pindai QR Nasabah</strong><button type="button" data-modal-dismiss onclick="closeQr()"><i class="fa-solid fa-xmark"></i></button></div><video id="qrVideo" playsinline class="w-full h-64 bg-black rounded-xl object-cover"></video><canvas id="qrCanvas" class="hidden"></canvas><p id="qrStatus" class="text-sm text-gray-500 mt-3 text-center">Arahkan kamera ke QR ID Card.</p></div></div>
 
 @if(session('wa_url'))
-<div class="fixed inset-0 z-[150] flex items-center justify-center bg-gray-900/60 p-4" id="waModal"><div class="bg-white max-w-md w-full rounded-2xl p-6 text-center"><i class="fa-brands fa-whatsapp text-5xl text-emerald-500"></i><h3 class="font-black text-xl mt-3">Setoran berhasil dicatat</h3><p class="text-sm text-gray-500 mt-2">Kirim bukti penerimaan pending kepada {{ session('wa_nasabah') }}.</p><div class="flex gap-3 mt-5"><button onclick="document.getElementById('waModal').remove()" class="flex-1 bg-gray-100 rounded-xl py-3 font-bold">Tutup</button><a target="_blank" href="{{ session('wa_url') }}" class="flex-1 bg-emerald-600 text-white rounded-xl py-3 font-bold">Kirim WA</a></div></div></div>
+<div class="fixed inset-0 z-[150] flex items-center justify-center bg-gray-900/60 p-4" id="waModal" data-keyboard-modal><div class="bg-white max-w-md w-full rounded-2xl p-6 text-center"><i class="fa-brands fa-whatsapp text-5xl text-emerald-500"></i><h3 class="font-black text-xl mt-3">Setoran berhasil dicatat</h3><p class="text-sm text-gray-500 mt-2">Kirim bukti penerimaan pending kepada {{ session('wa_nasabah') }}.</p><div class="flex gap-3 mt-5"><button data-modal-dismiss onclick="document.getElementById('waModal').remove()" class="flex-1 bg-gray-100 rounded-xl py-3 font-bold">Tutup</button><a target="_blank" href="{{ session('wa_url') }}" class="flex-1 bg-emerald-600 text-white rounded-xl py-3 font-bold">Kirim WA</a></div></div></div>
 @endif
 
 @push('scripts')
@@ -120,7 +120,7 @@ function renderCategories() {
             ? `<span class="mt-1 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700"><i class="fa-solid fa-leaf"></i>${emissionFactor(c.emissionFactor)} kgCO₂e/kg</span>`
             : `<span class="mt-1 inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-600"><i class="fa-solid fa-circle-exclamation"></i>Faktor emisi kosong</span>`;
 
-        return `<button type="button" onclick="openWeight(${c.id})" class="group min-h-28 rounded-2xl border border-gray-200 p-3 text-left transition hover:border-emerald-400 hover:bg-emerald-50/30">
+        return `<button type="button" onclick="openWeight(${c.id})" class="group min-h-28 rounded-2xl border border-gray-200 p-3 text-left transition hover:border-emerald-400 hover:bg-emerald-50/30 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300 focus-visible:ring-offset-2">
             <div class="flex items-start justify-between">
                 <span class="flex h-9 w-9 items-center justify-center rounded-xl ${hasFactor?'bg-emerald-50 text-emerald-600':'bg-red-50 text-red-500'}"><i class="fa-solid fa-recycle"></i></span>
                 <span class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-50 text-gray-300 transition group-hover:bg-emerald-100 group-hover:text-emerald-600"><i class="fa-solid fa-plus text-xs"></i></span>

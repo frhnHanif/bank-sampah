@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
 <div class="max-w-6xl mx-auto">
- <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-4 mb-6"><div><h1 class="text-2xl font-black text-gray-800">Jenis Sampah</h1><p class="text-sm text-gray-500">Pilihan operasional untuk transaksi setoran dan penjualan.</p></div><div class="flex gap-2"><a href="{{ route('kelompok-material.index') }}" class="bg-white border border-gray-100 shadow-sm rounded-xl px-4 py-3 font-bold"><i class="fa-solid fa-layer-group mr-2 text-emerald-600"></i>Kelompok Material</a><button onclick="openType()" class="bg-emerald-600 text-white rounded-xl px-4 py-3 font-bold"><i class="fa-solid fa-plus mr-2"></i>Tambah Jenis</button></div></div>
+ <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-4 mb-6"><div><h1 class="text-2xl font-black text-gray-800">Jenis Sampah</h1><p class="text-sm text-gray-500">Pilihan operasional untuk transaksi setoran dan penjualan.</p></div><div class="flex gap-2"><a href="{{ route('kelompok-material.index') }}" class="bg-white hover:bg-gray-100 transition border border-gray-100 shadow-sm rounded-xl px-4 py-3 font-bold"><i class="fa-solid fa-layer-group mr-2 text-emerald-600"></i>Kelompok Material</a><button onclick="openType()" class="bg-emerald-600 hover:bg-emerald-700 transition shadow-sm text-white rounded-xl px-4 py-3 font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300 focus-visible:ring-offset-2"><i class="fa-solid fa-plus mr-2"></i>Tambah Jenis</button></div></div>
  @if(session('success'))<div class="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-xl mb-5">{{ session('success') }}</div>@endif
  @if($errors->any())<div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-5">{{ $errors->first() }}</div>@endif
  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -40,7 +40,7 @@
 
     <div class="flex-1 min-h-4"></div>
     <div class="flex items-center gap-2 pt-4 border-t border-gray-50">
-     <button onclick='openType(@json($editData))' class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-500 hover:bg-blue-100 py-2.5 rounded-xl text-sm font-bold transition-colors">
+     <button onclick='openType(@json($editData))' class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-500 hover:bg-blue-100 py-2.5 rounded-xl text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 focus-visible:ring-offset-2">
       <i class="fa-solid fa-pen-to-square"></i>Edit
      </button>
      @if($item->is_active)
@@ -61,6 +61,33 @@
   @endforelse
  </div>
 </div>
-<div id="typeModal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-gray-900/50 p-4"><form id="typeForm" method="POST" class="bg-white rounded-2xl p-6 w-full max-w-md">@csrf<input id="typeMethod" type="hidden" name="_method" value="POST"><h2 id="typeTitle" class="font-black text-xl">Tambah Jenis Sampah</h2><label class="block text-xs font-black text-gray-400 uppercase mt-5">Nama jenis sampah</label><input id="typeName" name="nama" required class="mt-2 w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none"><label class="block text-xs font-black text-gray-400 uppercase mt-4">Kelompok Material</label><select id="typeGroup" name="kelompok_material_id" required class="mt-2 w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none"><option value="">Pilih kelompok</option>@foreach($kelompok as $group)<option value="{{ $group->id }}">{{ $group->nama }}</option>@endforeach</select><label class="block text-xs font-black text-gray-400 uppercase mt-4">Satuan pencatatan</label><select id="typeUnit" name="satuan_pencatatan" required class="mt-2 w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none"><option value="KG">KG</option><option value="PCS">PCS</option></select><div class="flex gap-3 mt-6"><button type="button" onclick="typeModal.classList.add('hidden')" class="flex-1 bg-gray-100 rounded-xl py-3 font-bold">Batal</button><button class="flex-1 bg-emerald-600 text-white rounded-xl py-3 font-bold">Simpan</button></div></form></div>
-@push('scripts')<script>function openType(item=null){typeTitle.textContent=item?'Edit Jenis Sampah':'Tambah Jenis Sampah';typeForm.action=item?@json(url('/jenis-sampah'))+'/'+item.id:@json(route('jenis-sampah.store'));typeMethod.value=item?'PUT':'POST';typeName.value=item?.name||'';typeGroup.value=item?.group||'';typeUnit.value=item?.unit||'KG';typeModal.classList.remove('hidden');typeModal.classList.add('flex')}</script>@endpush
+<div id="typeModal" data-keyboard-modal class="fixed inset-0 z-[120] hidden items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300"><form id="typeForm" method="POST" class="bg-white rounded-2xl p-6 w-full max-w-md transform scale-95 transition-transform duration-300" data-modal-box>@csrf<input id="typeMethod" type="hidden" name="_method" value="POST"><h2 id="typeTitle" class="font-black text-xl">Tambah Jenis Sampah</h2><label class="block text-xs font-black text-gray-400 uppercase mt-5">Nama jenis sampah</label><input id="typeName" name="nama" required class="mt-2 w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none"><label class="block text-xs font-black text-gray-400 uppercase mt-4">Kelompok Material</label><select id="typeGroup" name="kelompok_material_id" required class="mt-2 w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none"><option value="">Pilih kelompok</option>@foreach($kelompok as $group)<option value="{{ $group->id }}">{{ $group->nama }}</option>@endforeach</select><label class="block text-xs font-black text-gray-400 uppercase mt-4">Satuan pencatatan</label><select id="typeUnit" name="satuan_pencatatan" required class="mt-2 w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none"><option value="KG">KG</option><option value="PCS">PCS</option></select><div class="flex gap-3 mt-6"><button type="button" data-modal-dismiss onclick="closeType()" class="flex-1 bg-gray-100 rounded-xl py-3 font-bold">Batal</button><button class="flex-1 bg-emerald-600 text-white rounded-xl py-3 font-bold">Simpan</button></div></form></div>
+@push('scripts')
+<script>
+    const typeModal = document.getElementById('typeModal');
+    const typeModalBox = typeModal.querySelector('[data-modal-box]');
+
+    function openType(item=null) {
+        typeTitle.textContent=item?'Edit Jenis Sampah':'Tambah Jenis Sampah';
+        typeForm.action=item?@json(url('/jenis-sampah'))+'/'+item.id:@json(route('jenis-sampah.store'));
+        typeMethod.value=item?'PUT':'POST';typeName.value=item?.name||'';
+        typeGroup.value=item?.group||'';typeUnit.value=item?.unit||'KG';
+        typeModal.classList.remove('hidden');
+        typeModal.classList.add('flex');
+        setTimeout(() => {
+            typeModal.classList.remove('opacity-0');
+            typeModalBox.classList.remove('scale-95');
+        }, 10);
+    }
+
+    function closeType() {
+        typeModal.classList.add('opacity-0');
+        typeModalBox.classList.add('scale-95');
+        setTimeout(() => {
+            typeModal.classList.add('hidden');
+            typeModal.classList.remove('flex');
+        }, 300);
+    }
+</script>
+@endpush
 @endsection

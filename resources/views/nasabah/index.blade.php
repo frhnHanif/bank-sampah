@@ -6,7 +6,7 @@
         <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Data Nasabah</h1>
         <p class="text-sm text-gray-500">Kelola informasi warga yang terdaftar sebagai nasabah bank sampah.</p>
     </div>
-    <button type="button" onclick="bukaModalCreate()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition shadow-sm flex items-center gap-2 w-full sm:w-auto justify-center">
+    <button type="button" onclick="bukaModalCreate()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition shadow-sm flex items-center gap-2 w-full sm:w-auto justify-center focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300 focus-visible:ring-offset-2">
         <i class="fa-solid fa-user-plus"></i> Tambah Nasabah
     </button>
 </div>
@@ -68,7 +68,7 @@
             <a href="{{ route('tabungan.show', $item->id) }}" class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 py-2.5 rounded-xl text-sm font-bold transition-colors">
                 <i class="fa-solid fa-book"></i> Tabungan
             </a>
-            <button type="button" onclick="bukaModalEdit({{ $item->id }}, '{{ addslashes($item->nama) }}', '{{ $item->rt }}', '{{ $item->rw }}', '{{ $item->no_hp }}')" class="w-11 h-11 flex items-center justify-center bg-blue-50 text-blue-500 hover:bg-blue-100 rounded-xl transition-colors shrink-0" title="Edit">
+            <button type="button" onclick="bukaModalEdit({{ $item->id }}, '{{ addslashes($item->nama) }}', '{{ $item->rt }}', '{{ $item->rw }}', '{{ $item->no_hp }}')" class="w-11 h-11 flex items-center justify-center bg-blue-50 text-blue-500 hover:bg-blue-100 rounded-xl transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 focus-visible:ring-offset-2" title="Edit">
                 <i class="fa-solid fa-pen-to-square"></i>
             </button>
             <form action="{{ route('nasabah.destroy', $item->id) }}" method="POST" class="shrink-0 delete-form">
@@ -87,7 +87,7 @@
         </div>
         <h3 class="text-lg font-bold text-gray-700">Belum ada nasabah terdaftar</h3>
         <p class="text-gray-500 mt-1 mb-6">Silakan daftarkan warga sebagai nasabah baru untuk memulai transaksi.</p>
-        <button type="button" onclick="bukaModalCreate()" class="bg-emerald-100 text-emerald-700 px-6 py-2.5 rounded-xl font-bold hover:bg-emerald-200 transition">
+        <button type="button" onclick="bukaModalCreate()" class="bg-emerald-100 text-emerald-700 px-6 py-2.5 rounded-xl font-bold hover:bg-emerald-200 transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300 focus-visible:ring-offset-2">
             Daftarkan Nasabah Pertama
         </button>
     </div>
@@ -102,7 +102,7 @@
     </div>
 </div>
 
-<div id="modalCreate" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
+<div id="modalCreate" data-keyboard-modal class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
     <div class="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300" id="modalCreateBox">
         
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
@@ -110,7 +110,7 @@
                 <h3 class="font-bold text-gray-800">Daftarkan Nasabah Baru</h3>
                 <p class="text-[10px] text-gray-500">Nomor rekening otomatis: RT + RW + ID (contoh 0030010001).</p>
             </div>
-            <button type="button" onclick="tutupModalCreate()" class="text-gray-400 hover:text-red-500 transition-colors">
+            <button type="button" data-modal-dismiss onclick="tutupModalCreate()" class="text-gray-400 hover:text-red-500 transition-colors">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
         </div>
@@ -156,12 +156,12 @@
     </div>
 </div>
 
-<div id="modalEdit" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
+<div id="modalEdit" data-keyboard-modal class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
     <div class="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300" id="modalEditBox">
         
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <h3 class="font-bold text-gray-800">Edit Data Nasabah</h3>
-            <button type="button" onclick="tutupModalEdit()" class="text-gray-400 hover:text-red-500 transition-colors">
+            <button type="button" data-modal-dismiss onclick="tutupModalEdit()" class="text-gray-400 hover:text-red-500 transition-colors">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
         </div>

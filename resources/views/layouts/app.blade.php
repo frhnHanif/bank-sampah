@@ -183,7 +183,7 @@
     <div id="toastContainer" class="fixed top-6 right-6 z-[200] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- ===== CONFIRM MODAL ===== -->
-    <div id="confirmModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[200] hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
+    <div id="confirmModal" data-keyboard-modal class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[200] hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
         <div id="confirmModalBox" class="bg-white rounded-2xl w-full max-w-md mx-auto overflow-hidden transform scale-95 transition-transform duration-300 shadow-xl">
             <div class="p-6 text-center">
                 <div id="confirmIcon" class="w-14 h-14 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
@@ -192,10 +192,10 @@
                 <h3 id="confirmTitle" class="text-lg font-bold text-gray-800 mb-2">Konfirmasi</h3>
                 <p id="confirmMessage" class="text-gray-600 text-sm mb-6">Apakah Anda yakin?</p>
                 <div class="flex gap-3 justify-center">
-                    <button type="button" id="confirmCancelBtn" class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition text-sm">
+                    <button type="button" id="confirmCancelBtn" data-modal-dismiss class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition text-sm">
                         Batal
                     </button>
-                    <button type="button" id="confirmOkBtn" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition text-sm">
+                    <button type="button" id="confirmOkBtn" data-modal-submit class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition text-sm">
                         Ya, Lanjutkan
                     </button>
                 </div>
@@ -309,6 +309,63 @@
             });
         });
     }
+
+    // ==================== MODAL KEYBOARD SYSTEM ====================
+    function getActiveKeyboardModal() {
+        const visibleModals = Array.from(document.querySelectorAll('[data-keyboard-modal]'))
+            .filter(modal => modal.isConnected && getComputedStyle(modal).display !== 'none')
+            .map((modal, order) => ({
+                modal,
+                order,
+                zIndex: Number.parseInt(getComputedStyle(modal).zIndex, 10) || 0,
+            }))
+            .sort((a, b) => a.zIndex - b.zIndex || a.order - b.order);
+
+        return visibleModals.length ? visibleModals[visibleModals.length - 1].modal : null;
+    }
+
+    document.addEventListener('keydown', event => {
+        if (event.isComposing) return;
+
+        const modal = getActiveKeyboardModal();
+        if (!modal) return;
+
+        if (event.key === 'Escape') {
+            const dismissButton = modal.querySelector('[data-modal-dismiss]');
+            if (!dismissButton) return;
+
+            event.preventDefault();
+            dismissButton.click();
+            return;
+        }
+
+        if (event.key !== 'Enter' || event.ctrlKey || event.metaKey || event.altKey) return;
+
+        const target = event.target;
+        if (target instanceof HTMLElement && (
+            target.matches('textarea, select') ||
+            (modal.contains(target) && target.matches('button, a')) ||
+            target.isContentEditable
+        )) return;
+
+        const primaryAction = modal.querySelector('[data-modal-submit]');
+        if (primaryAction) {
+            if (primaryAction instanceof HTMLButtonElement && primaryAction.disabled) return;
+
+            event.preventDefault();
+            primaryAction.click();
+            return;
+        }
+
+        const form = target instanceof Element
+            ? target.closest('form') || modal.querySelector('form')
+            : modal.querySelector('form');
+        if (!(form instanceof HTMLFormElement)) return;
+
+        const submitButton = form.querySelector('button[type="submit"]:not(:disabled), input[type="submit"]:not(:disabled)');
+        event.preventDefault();
+        submitButton ? form.requestSubmit(submitButton) : form.requestSubmit();
+    });
 
     // ==================== CUSTOM SELECT SYSTEM ====================
     document.addEventListener('DOMContentLoaded', () => {

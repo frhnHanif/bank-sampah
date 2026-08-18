@@ -95,7 +95,7 @@
                         $labelTahun = $tahun > 0 ? $tahun : 'Semua Tahun';
                         $labelFilter = ($bulan > 0 || $tahun > 0) ? $labelBulan . ' ' . $labelTahun : 'Semua Waktu';
                     @endphp
-                    <button type="button" onclick="bukaModalFilterBulan()" class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-600 hover:border-emerald-300 focus:ring-2 focus:ring-emerald-500 outline-none flex items-center gap-2 transition-colors">
+                    <button type="button" onclick="bukaModalFilterBulan()" class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-600 hover:border-emerald-300 flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300 focus-visible:ring-offset-2">
                         <i class="fa-solid fa-calendar text-emerald-400"></i> {{ $labelFilter }}
                     </button>
 
@@ -179,7 +179,7 @@
             <div class="relative bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-6 text-white shadow-lg shadow-emerald-200">
                 
                 @unless($isNasabahView)
-                <button type="button" onclick="bukaModalEdit()" class="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center transition-colors backdrop-blur-sm tooltip" title="Edit Profil Nasabah">
+                <button type="button" onclick="bukaModalEdit()" class="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center transition-colors backdrop-blur-sm tooltip focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/70" title="Edit Profil Nasabah">
                     <i class="fa-solid fa-pen text-sm"></i>
                 </button>
                 @endunless
@@ -201,7 +201,7 @@
 
                 <div class="mt-6 pt-5 border-t border-emerald-400/30 flex items-center gap-3">
                     @unless($isNasabahView)
-                    <button type="button" onclick="bukaModalTarik()" class="flex-1 bg-white text-emerald-700 hover:bg-emerald-50 font-black py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
+                    <button type="button" onclick="bukaModalTarik()" class="flex-1 bg-white text-emerald-700 hover:bg-emerald-50 font-black py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-600">
                         <i class="fa-solid fa-hand-holding-dollar text-lg"></i> Tarik Tunai
                     </button>
                     @endunless
@@ -221,12 +221,12 @@
     </div>
 </div>
 
-<div id="modalEditNasabah" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
+<div id="modalEditNasabah" data-keyboard-modal class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
     <div class="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300" id="modalEditBox">
         
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <h3 class="font-bold text-gray-800">Edit Profil Nasabah</h3>
-            <button type="button" onclick="tutupModalEdit()" class="text-gray-400 hover:text-red-500 transition-colors">
+            <button type="button" data-modal-dismiss onclick="tutupModalEdit()" class="text-gray-400 hover:text-red-500 transition-colors">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
         </div>
@@ -274,12 +274,12 @@
 </div>
 
 @unless($isNasabahView)
-<div id="modalTarikTunai" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
+<div id="modalTarikTunai" data-keyboard-modal class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
     <div class="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300" id="modalTarikBox">
         
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <h3 class="font-bold text-gray-800"><i class="fa-solid fa-money-bill-transfer mr-2 text-emerald-500"></i>Form Tarik Tunai</h3>
-            <button type="button" onclick="tutupModalTarik()" class="text-gray-400 hover:text-red-500 transition-colors">
+            <button type="button" data-modal-dismiss onclick="tutupModalTarik()" class="text-gray-400 hover:text-red-500 transition-colors">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
         </div>
@@ -313,7 +313,7 @@
                 <button type="button" onclick="tutupModalTarik()" class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 py-2.5 rounded-xl font-bold transition-colors">
                     Batal
                 </button>
-                <button type="button" onclick="prosesTarik()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold transition-colors shadow-sm">
+                <button type="button" data-modal-submit onclick="prosesTarik()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold transition-colors shadow-sm">
                     Proses Tarik
                 </button>
             </div>
@@ -322,11 +322,11 @@
 </div>
 @endunless
 
-<div id="modalFilterBulan" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
+<div id="modalFilterBulan" data-keyboard-modal class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
     <div class="bg-white rounded-2xl w-full max-w-xs mx-4 overflow-hidden transform scale-95 transition-transform duration-300 shadow-xl" id="modalFilterBulanBox">
         <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-calendar mr-2 text-emerald-500"></i>Filter Waktu</h3>
-            <button type="button" onclick="tutupModalFilterBulan()" class="text-gray-400 hover:text-red-500 transition-colors">
+            <button type="button" data-modal-dismiss onclick="tutupModalFilterBulan()" class="text-gray-400 hover:text-red-500 transition-colors">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -367,13 +367,13 @@
 </div>
 
 @if(session('wa_url'))
-<div id="modalWaSukses" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[150] flex items-center justify-center">
+<div id="modalWaSukses" data-keyboard-modal class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[150] flex items-center justify-center">
     <div class="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden shadow-2xl transform transition-all scale-100">
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-emerald-50">
             <h3 class="font-bold text-emerald-800 flex items-center gap-2">
                 <i class="fa-brands fa-whatsapp text-emerald-500 text-xl"></i> Penarikan Sukses
             </h3>
-            <button type="button" onclick="document.getElementById('modalWaSukses').classList.add('hidden')" class="text-gray-400 hover:text-red-500 transition-colors">
+            <button type="button" data-modal-dismiss onclick="document.getElementById('modalWaSukses').classList.add('hidden')" class="text-gray-400 hover:text-red-500 transition-colors">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
         </div>
